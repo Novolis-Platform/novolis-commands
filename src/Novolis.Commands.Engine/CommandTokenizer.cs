@@ -4,11 +4,13 @@ namespace Novolis.Commands.Engine;
 
 /// <summary>
 /// Splits normalized command prompts into tokens using .NET whitespace rules
-/// (<see cref="MemoryExtensions.SplitAny(ReadOnlySpan{char}, SearchValues{char})"/>).
+/// (<see cref="MemoryExtensions.SplitAny(ReadOnlySpan{char}, SearchValues{char})"/>),
+/// then trims leading/trailing punctuation from each token.
 /// </summary>
 public static class CommandTokenizer
 {
     private static readonly SearchValues<char> Whitespace = SearchValues.Create(" \t\r\n\v\f");
+    private static readonly SearchValues<char> Punctuation = SearchValues.Create(",;:.!?");
 
     public static string[] Tokenize(string normalized)
     {
@@ -27,10 +29,28 @@ public static class CommandTokenizer
             if (range.Start.Value == range.End.Value)
                 continue;
 
-            tokens[index++] = span[range].ToString();
+            var token = TrimPunctuation(span[range]);
+            if (token.Length == 0)
+                continue;
+
+            tokens[index++] = token.ToString();
         }
 
         return index == tokens.Length ? tokens : tokens[..index];
+    }
+
+    private static ReadOnlySpan<char> TrimPunctuation(ReadOnlySpan<char> token)
+    {
+        var start = 0;
+        var end = token.Length;
+
+        while (start < end && Punctuation.Contains(token[start]))
+            start++;
+
+        while (end > start && Punctuation.Contains(token[end - 1]))
+            end--;
+
+        return token[start..end];
     }
 
     private static int CountTokens(ReadOnlySpan<char> span)
@@ -38,7 +58,10 @@ public static class CommandTokenizer
         var count = 0;
         foreach (var range in span.SplitAny(Whitespace))
         {
-            if (range.Start.Value != range.End.Value)
+            if (range.Start.Value == range.End.Value)
+                continue;
+
+            if (TrimPunctuation(span[range]).Length > 0)
                 count++;
         }
 

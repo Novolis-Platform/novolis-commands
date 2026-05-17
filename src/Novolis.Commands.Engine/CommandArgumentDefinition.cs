@@ -10,4 +10,7 @@ public sealed record CommandArgumentDefinition(
 
     public static CommandArgumentDefinition String(string name, bool required = true) =>
         new(name, CommandArgumentKind.String, required);
+
+    public static CommandArgumentDefinition Double(string name, bool required = true) =>
+        new(name, CommandArgumentKind.Double, required);
 }

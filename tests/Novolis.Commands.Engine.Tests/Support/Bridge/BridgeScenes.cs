@@ -14,7 +14,8 @@ public static class BridgeScenes
         CaptainCallsForHelp(),
         ImpatientCaptainRejectedOrders(),
         PersonnelTransfer(),
-        QuietNightWatch()
+        QuietNightWatch(),
+        NaturalOrdersFromLog()
     ];
 
     public static IEnumerable<BridgeSceneOrder> AllOrders() =>
@@ -214,6 +215,31 @@ public static class BridgeScenes
                 expectedPriority: CommandPriority.High)
         ],
         EndState: new BridgeSceneExpectation(Heading: 180, Warp: 5, StatusContains: "queue cleared"));
+
+    /// <summary>
+    /// Exact lines from the captain's log that previously failed parsing.
+    /// </summary>
+    public static BridgeScene NaturalOrdersFromLog() => new(
+        Title: "Natural Orders",
+        Epigraph: "The captain speaks the way humans do. The computer learns to listen.",
+        Orders:
+        [
+            Order("Reverse course.", "Picard", "helm come about", "helm.come-about", "helm"),
+            Order("Maximum warp.", "Riker", "helm all ahead full", "helm.all-ahead-full", "helm"),
+            Order("Worf acquires the hostile.", "Worf", "weaps target the closest enemy", "tactical.lock-target", "tactical"),
+            Order(
+                "Picard with punctuation and 3D heading.",
+                "Picard",
+                "helm, set heading to 122 by 180",
+                "helm.set-heading",
+                "helm",
+                new Dictionary<string, object?> { ["heading"] = 122.0, ["headingBy"] = 180.0 })
+        ],
+        EndState: new BridgeSceneExpectation(
+            Heading: 122,
+            HeadingBy: 180,
+            Warp: 9,
+            TargetLocked: true));
 
     private static BridgeSceneOrder Order(
         string beat,

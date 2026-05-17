@@ -13,7 +13,9 @@ public sealed class CommandTokenizerTests
         ("tactical lock target", ["tactical", "lock", "target"]),
         ("nav set course alpha centauri", ["nav", "set", "course", "alpha", "centauri"]),
         ("belay that", ["belay", "that"]),
-        ("help tactical", ["help", "tactical"])
+        ("help tactical", ["help", "tactical"]),
+        ("helm, set heading to 122", ["helm", "set", "heading", "to", "122"]),
+        ("tactical, lock target!", ["tactical", "lock", "target"])
     ];
 
     [Test]

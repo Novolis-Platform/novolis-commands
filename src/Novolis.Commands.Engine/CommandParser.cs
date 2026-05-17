@@ -62,6 +62,9 @@ public sealed class CommandParser(ICommandRegistry registry)
         string[] argumentTokens,
         string? contextWord)
     {
+        if (string.Equals(definition.Name, "helm.set-heading", StringComparison.Ordinal))
+            return BuildHeadingSuccess(originalPrompt, argumentTokens, contextWord ?? definition.ContextWord);
+
         var arguments = new Dictionary<string, object?>();
         var argDefs = definition.Arguments;
         var argIndex = 0;
@@ -126,6 +129,45 @@ public sealed class CommandParser(ICommandRegistry registry)
         return ParseResult.Succeeded(envelope);
     }
 
+    private static ParseResult BuildHeadingSuccess(
+        string originalPrompt,
+        string[] argumentTokens,
+        string? contextWord)
+    {
+        if (argumentTokens.Length == 0)
+        {
+            return ParseResult.Failed(
+                new ParseFailure(
+                    ParseFailureCode.MissingArgument,
+                    "Missing required argument 'heading'.",
+                    "heading"));
+        }
+
+        if (!HeadingArgumentParser.TryParse(argumentTokens, out var heading, out var headingBy))
+        {
+            return ParseResult.Failed(
+                new ParseFailure(
+                    ParseFailureCode.InvalidArgument,
+                    "Invalid heading. Use: 270 | 122 by 180 | 122 mark 6 by 180",
+                    string.Join(" ", argumentTokens)));
+        }
+
+        var arguments = new Dictionary<string, object?> { ["heading"] = heading };
+        if (headingBy is double by)
+            arguments["headingBy"] = by;
+
+        var envelope = new CommandEnvelope
+        {
+            Id = CommandId.New(),
+            Name = "helm.set-heading",
+            OriginalPrompt = originalPrompt,
+            ContextWord = contextWord,
+            Arguments = arguments
+        };
+
+        return ParseResult.Succeeded(envelope);
+    }
+
     private static bool TryParseArgument(string token, CommandArgumentDefinition definition, out object? value)
     {
         switch (definition.Kind)
@@ -142,6 +184,15 @@ public sealed class CommandParser(ICommandRegistry registry)
             case CommandArgumentKind.String:
                 value = token;
                 return true;
+            case CommandArgumentKind.Double:
+                if (double.TryParse(token, out var doubleValue))
+                {
+                    value = doubleValue;
+                    return true;
+                }
+
+                value = null;
+                return false;
             default:
                 value = null;
                 return false;

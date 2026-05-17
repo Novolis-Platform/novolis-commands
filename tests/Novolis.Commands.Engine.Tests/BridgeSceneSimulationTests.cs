@@ -42,6 +42,12 @@ public sealed class BridgeSceneSimulationTests
     }
 
     [Test]
+    public async Task NaturalOrdersFromLog_Should_Parse_And_Execute()
+    {
+        await BridgeSceneRunner.PlaySimulationAsync(BridgeScenes.NaturalOrdersFromLog());
+    }
+
+    [Test]
     public async Task Kr12Scene_Log_Should_Read_Like_A_Transcript()
     {
         var bridge = new BridgeSimulator();

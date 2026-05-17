@@ -25,7 +25,7 @@ internal static class ParseAssertions
             if (testCase.ExpectedArguments is not null)
             {
                 foreach (var (key, expected) in testCase.ExpectedArguments)
-                    await Assert.That(result.Command.Arguments[key]).IsEqualTo(expected);
+                    await AssertArgumentEqual(result.Command.Arguments[key], expected);
             }
 
             return;
@@ -71,7 +71,7 @@ internal static class ParseAssertions
             if (testCase.ExpectedArguments is not null)
             {
                 foreach (var (key, expected) in testCase.ExpectedArguments)
-                    await Assert.That(result.Command.Arguments[key]).IsEqualTo(expected);
+                    await AssertArgumentEqual(result.Command.Arguments[key], expected);
             }
 
             return;
@@ -83,4 +83,15 @@ internal static class ParseAssertions
 
     private static IReadOnlyDictionary<string, string> EmptyAliases { get; } =
         new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+
+    private static async Task AssertArgumentEqual(object? actual, object? expected)
+    {
+        if (actual is double actualDouble && expected is not null)
+        {
+            await Assert.That(actualDouble).IsEqualTo(Convert.ToDouble(expected));
+            return;
+        }
+
+        await Assert.That(actual).IsEqualTo(expected);
+    }
 }

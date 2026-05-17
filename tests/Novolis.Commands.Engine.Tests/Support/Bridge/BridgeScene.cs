@@ -7,7 +7,8 @@ public sealed record BridgeScene(
     BridgeSceneExpectation? EndState = null);
 
 public sealed record BridgeSceneExpectation(
-    int? Heading = null,
+    double? Heading = null,
+    double? HeadingBy = null,
     int? Warp = null,
     int? ShieldsMin = null,
     int? HullMin = null,

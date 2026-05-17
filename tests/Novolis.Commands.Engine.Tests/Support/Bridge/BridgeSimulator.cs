@@ -8,7 +8,8 @@ namespace Novolis.Commands.Engine.Tests.Support.Bridge;
 public sealed class BridgeSimulator
 {
     public string ShipName { get; } = "USS Novolis";
-    public int Heading { get; private set; } = 180;
+    public double Heading { get; private set; } = 180;
+    public double HeadingBy { get; private set; }
     public int SpeedWarp { get; private set; } = 5;
     public int ShieldPercent { get; private set; } = 80;
     public int HullPercent { get; private set; } = 100;
@@ -53,10 +54,22 @@ public sealed class BridgeSimulator
                 return ProcessAsync(LastEnvelope, cancellationToken);
 
             case "helm.set-heading":
-                Heading = (int)command.Arguments["heading"]! % 360;
-                if (Heading < 0)
-                    Heading += 360;
-                StatusLine = $"Helm: course set to {Heading}°.";
+                Heading = NormalizeHeading(Convert.ToDouble(command.Arguments["heading"]!));
+                if (command.Arguments.TryGetValue("headingBy", out var byValue) && byValue is not null)
+                    HeadingBy = NormalizeHeading(Convert.ToDouble(byValue));
+                StatusLine = command.Arguments.ContainsKey("headingBy")
+                    ? $"Helm: course {Heading:0.##}° BY {HeadingBy:0.##}°."
+                    : $"Helm: course set to {Heading:0.##}°.";
+                break;
+
+            case "helm.come-about":
+                Heading = NormalizeHeading(Heading + 180);
+                StatusLine = $"Helm: coming about to {Heading:0.##}°.";
+                break;
+
+            case "helm.all-ahead-full":
+                SpeedWarp = 9;
+                StatusLine = "Helm: all ahead full — warp 9.";
                 break;
 
             case "helm.full-stop":
@@ -65,7 +78,7 @@ public sealed class BridgeSimulator
                 break;
 
             case "helm.set-speed":
-                SpeedWarp = Math.Clamp((int)command.Arguments["warp"]!, 0, 9);
+                SpeedWarp = Math.Clamp(Convert.ToInt32(command.Arguments["warp"]!), 0, 9);
                 StatusLine = $"Helm: warp {SpeedWarp}.";
                 break;
 
@@ -118,5 +131,11 @@ public sealed class BridgeSimulator
         LastExecutedCommand = command.Name;
         Log = _log.ToArray();
         return ValueTask.CompletedTask;
+    }
+
+    private static double NormalizeHeading(double degrees)
+    {
+        var normalized = degrees % 360;
+        return normalized < 0 ? normalized + 360 : normalized;
     }
 }

@@ -37,7 +37,12 @@ internal static class BridgeSceneRunner
             if (order.Arguments is not null)
             {
                 foreach (var (key, value) in order.Arguments)
-                    await Assert.That(result.Command.Arguments[key]).IsEqualTo(value);
+                {
+                    if (value is double or int or float)
+                        await Assert.That(Convert.ToDouble(result.Command.Arguments[key])).IsEqualTo(Convert.ToDouble(value));
+                    else
+                        await Assert.That(result.Command.Arguments[key]).IsEqualTo(value);
+                }
             }
 
             if (order.ExpectedPriority is CommandPriority priority)
@@ -113,8 +118,11 @@ internal static class BridgeSceneRunner
 
     public static async Task AssertEndStateAsync(BridgeSimulator bridge, BridgeSceneExpectation expected)
     {
-        if (expected.Heading is int h)
+        if (expected.Heading is double h)
             await Assert.That(bridge.Heading).IsEqualTo(h);
+
+        if (expected.HeadingBy is double by)
+            await Assert.That(bridge.HeadingBy).IsEqualTo(by);
 
         if (expected.Warp is int w)
             await Assert.That(bridge.SpeedWarp).IsEqualTo(w);

@@ -29,7 +29,7 @@ public class CommandEngineTests
 
         await Assert.That(result.Success).IsTrue();
         await Assert.That(result.Command!.Name).IsEqualTo("helm.set-heading");
-        await Assert.That(result.Command.Arguments["heading"]).IsEqualTo(270);
+        await Assert.That(Convert.ToDouble(result.Command.Arguments["heading"])).IsEqualTo(270);
     }
 
     [Test]
@@ -53,7 +53,7 @@ public class CommandEngineTests
         var result = await engine.ParseCommandAsync("helm set heading 180", context);
 
         await Assert.That(result.Success).IsTrue();
-        await Assert.That(result.Command!.Arguments["heading"]).IsEqualTo(180);
+        await Assert.That(Convert.ToDouble(result.Command!.Arguments["heading"])).IsEqualTo(180);
     }
 
     [Test]

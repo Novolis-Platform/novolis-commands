@@ -67,7 +67,7 @@ public static class CommandParserTestCases
             .Add("dup.b", "shared", ["scan"])
             .Add("dup.c", "shared", ["lock target"])
             .Add("dup.d", "shared", ["lock target"])
-            .Build();
+            .Build(validate: false);
 
     private static IEnumerable<string> SampleLabels() =>
         Enumerable.Range(1, 40).Select(i => $"sample label number {i}");

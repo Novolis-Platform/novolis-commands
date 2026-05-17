@@ -8,7 +8,7 @@ namespace Novolis.Commands.Engine.Tests;
 public sealed class CommandEngineTheoryTests
 {
     private static CommandEngine<TestCommandContext> CreateEngine(ICommandRegistry? registry = null) =>
-        new(registry ?? CommandEngineTestRegistry.Create(), new TestCommandContextResolver());
+        CommandEngineTestSupport.Create(registry);
 
     public static IEnumerable<ParseCase> SuccessCases() => CommandEngineTestCases.SuccessCases();
 

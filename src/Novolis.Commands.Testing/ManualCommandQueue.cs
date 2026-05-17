@@ -52,4 +52,15 @@ public sealed class ManualCommandQueue : ICommandQueue
             await signal.Task.WaitAsync(cancellationToken).ConfigureAwait(false);
         }
     }
+
+    public ValueTask ClearPendingAsync(CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        lock (_lock)
+        {
+            _pending.Clear();
+        }
+
+        return ValueTask.CompletedTask;
+    }
 }

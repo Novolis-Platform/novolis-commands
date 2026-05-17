@@ -43,6 +43,43 @@ public class CommandQueueRunnerTests
         }
     }
 
+    [Test]
+    public async Task RunAsync_ClearQueue_Should_Drain_Pending_Commands()
+    {
+        var queue = new ManualCommandQueue();
+        var processor = new RecordingProcessor();
+        var runner = new CommandQueueRunner<object>(queue, processor);
+
+        using var runCts = new CancellationTokenSource();
+        var runTask = runner.RunAsync(new object(), runCts.Token);
+
+        await queue.EnqueueAsync(CreateEnvelope("first"));
+        await queue.EnqueueAsync(CreateEnvelope("second"));
+        await queue.EnqueueAsync(new CommandEnvelope
+        {
+            Id = CommandId.New(),
+            Name = BuiltInCommands.ClearQueue,
+            OriginalPrompt = "clear queue",
+            ContextWord = null,
+            Arguments = new Dictionary<string, object?>(),
+            CancelsQueuedCommands = true
+        });
+        await queue.EnqueueAsync(CreateEnvelope("third"));
+
+        await processor.Processed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await Assert.That(processor.Names).IsEquivalentTo(
+            ["first", "second", BuiltInCommands.ClearQueue]);
+
+        runCts.Cancel();
+        try
+        {
+            await runTask.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
     private static CommandEnvelope CreateEnvelope(string name) =>
         new()
         {
@@ -83,6 +120,25 @@ public class CommandQueueRunnerTests
             {
                 LongRunningCancelled = true;
             }
+        }
+    }
+
+    private sealed class RecordingProcessor : ICommandProcessor<object>
+    {
+        public List<string> Names { get; } = [];
+        public TaskCompletionSource Processed { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public ValueTask ProcessAsync(
+            CommandEnvelope command,
+            object context,
+            CancellationToken cancellationToken)
+        {
+            Names.Add(command.Name);
+            if (command.Name == BuiltInCommands.ClearQueue)
+                Processed.TrySetResult();
+
+            return ValueTask.CompletedTask;
         }
     }
 }

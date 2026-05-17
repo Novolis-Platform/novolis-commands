@@ -7,7 +7,5 @@ public enum ParseFailureCode
     UnknownCommand,
     MissingArgument,
     InvalidArgument,
-    AmbiguousCommand,
-    NotAllowed,
-    RequiresConfirmation
+    AmbiguousCommand
 }

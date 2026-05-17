@@ -1,12 +1,37 @@
 namespace Novolis.Commands.Engine;
 
-public sealed class CommandEngine<TContext>(
-    ICommandRegistry registry,
-    ICommandContextResolver<TContext> contextResolver,
-    BuiltInCommandMatcher? builtInMatcher = null) : ICommandEngine<TContext>
+public sealed class CommandEngine<TContext> : ICommandEngine<TContext>
 {
-    private readonly BuiltInCommandMatcher _builtInMatcher = builtInMatcher ?? new BuiltInCommandMatcher();
-    private readonly CommandParser _parser = new(registry);
+    private readonly ICommandRegistry _registry;
+    private readonly ICommandContextResolver<TContext> _contextResolver;
+    private readonly BuiltInCommandMatcher _builtInMatcher;
+    private readonly CommandParser _parser;
+
+    public CommandEngine(
+        ICommandRegistry registry,
+        ICommandContextResolver<TContext> contextResolver,
+        CommandEngineOptions? options = null)
+    {
+        ArgumentNullException.ThrowIfNull(registry);
+        ArgumentNullException.ThrowIfNull(contextResolver);
+
+        var engineOptions = options ?? new CommandEngineOptions();
+        var parsers = engineOptions.ArgumentParsers.ToFrozen();
+        CommandRegistryValidator.ValidateArgumentParserKeys(registry.GetAll(), parsers.Keys);
+
+        _registry = registry;
+        _contextResolver = contextResolver;
+        _builtInMatcher = engineOptions.BuiltInMatcher ?? new BuiltInCommandMatcher();
+        _parser = new CommandParser(registry, parsers);
+    }
+
+    public CommandEngine(
+        ICommandRegistry registry,
+        ICommandContextResolver<TContext> contextResolver,
+        BuiltInCommandMatcher builtInMatcher)
+        : this(registry, contextResolver, new CommandEngineOptions { BuiltInMatcher = builtInMatcher })
+    {
+    }
 
     public ValueTask<ParseResult> ParseCommandAsync(
         string prompt,
@@ -34,7 +59,7 @@ public sealed class CommandEngine<TContext>(
                 new ParseFailure(ParseFailureCode.UnknownCommand, "Unknown command.", trimmed)));
         }
 
-        var contextAliases = contextResolver.GetContextAliases(context);
+        var contextAliases = _contextResolver.GetContextAliases(context);
         var explicitContext = ResolveContextWord(tokens[0], contextAliases);
 
         if (explicitContext is null)
@@ -46,7 +71,7 @@ public sealed class CommandEngine<TContext>(
                     tokens[0])));
         }
 
-        var verbAliases = contextResolver.GetVerbAliases(context);
+        var verbAliases = _contextResolver.GetVerbAliases(context);
         var result = _parser.Parse(trimmed, normalized, tokens, explicitContext, verbAliases);
         return ValueTask.FromResult(result);
     }
@@ -56,11 +81,9 @@ public sealed class CommandEngine<TContext>(
         if (contextAliases.TryGetValue(firstToken, out var alias))
             return alias;
 
-        if (IsKnownContext(firstToken))
+        if (_registry.IsKnownContext(firstToken))
             return firstToken;
 
         return null;
     }
-
-    private bool IsKnownContext(string token) => registry.IsKnownContext(token);
 }

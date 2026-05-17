@@ -4,4 +4,5 @@ public sealed record CommandDefinition(
     string Name,
     string? ContextWord,
     IReadOnlyList<string> Verbs,
-    IReadOnlyList<CommandArgumentDefinition> Arguments);
+    IReadOnlyList<CommandArgumentDefinition> Arguments,
+    string? ArgumentParserKey = null);

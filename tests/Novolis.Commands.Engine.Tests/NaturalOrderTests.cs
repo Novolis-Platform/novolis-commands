@@ -8,7 +8,7 @@ namespace Novolis.Commands.Engine.Tests;
 public sealed class NaturalOrderTests
 {
     private static CommandEngine<TestCommandContext> CreateEngine() =>
-        new(CommandEngineTestRegistry.CreateBridge(), new TestCommandContextResolver());
+        CommandEngineTestSupport.CreateBridge();
 
     public static IEnumerable<(string Prompt, string Command, Dictionary<string, object?>? Args)> LogLines() =>
     [
@@ -18,7 +18,19 @@ public sealed class NaturalOrderTests
         (
             "helm, set heading to 122 by 180",
             "helm.set-heading",
-            new Dictionary<string, object?> { ["heading"] = 122.0, ["headingBy"] = 180.0 })
+            new Dictionary<string, object?> { ["heading"] = 122.0, ["headingBy"] = 180.0 }),
+        (
+            "helm, set course 123,5 by 119,4",
+            "helm.set-heading",
+            new Dictionary<string, object?> { ["heading"] = 123.5, ["headingBy"] = 119.4 }),
+        (
+            "helm set course 123.5 by 119.4",
+            "helm.set-heading",
+            new Dictionary<string, object?> { ["heading"] = 123.5, ["headingBy"] = 119.4 }),
+        (
+            "helm course 122 by 33",
+            "helm.set-heading",
+            new Dictionary<string, object?> { ["heading"] = 122.0, ["headingBy"] = 33.0 })
     ];
 
     [Test]
@@ -30,6 +42,11 @@ public sealed class NaturalOrderTests
 
         await Assert.That(result.Success).IsTrue();
         await Assert.That(result.Command!.Name).IsEqualTo(data.Command);
+
+        if (data.Command == "helm.set-heading")
+        {
+            await Assert.That(result.Command.ContextWord).IsEqualTo("helm");
+        }
 
         if (data.Args is null)
             return;

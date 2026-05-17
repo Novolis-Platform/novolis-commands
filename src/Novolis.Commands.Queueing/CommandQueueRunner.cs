@@ -12,6 +12,9 @@ public sealed class CommandQueueRunner<TContext>(
 
         await foreach (var command in queue.ReadAllAsync(cancellationToken).ConfigureAwait(false))
         {
+            if (command.CancelsQueuedCommands)
+                await queue.ClearPendingAsync(cancellationToken).ConfigureAwait(false);
+
             if (inFlight is not null)
             {
                 if (command.InterruptsCurrentCommand)

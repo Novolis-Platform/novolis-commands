@@ -2,7 +2,7 @@
 
 ## Boundary
 
-Novolis.Commands v0 stops at **intent**, not **execution**.
+Novolis.Commands stops at **intent**, not **execution**.
 
 | Layer | Responsibility |
 |-------|----------------|
@@ -20,23 +20,28 @@ Phrase → envelope only (handled in `BuiltInCommandMatcher`):
 | Phrase | Name | Priority | Interrupts | Cancels queue |
 |--------|------|----------|------------|---------------|
 | `belay that` | `system.belay-that` | Emergency | yes | no |
-| `clear queue` | `system.clear-queue` | High | no | yes |
+| `clear queue` | `system.clear-queue` | High | no | yes (runner drains pending via `ClearPendingAsync`) |
 | `repeat last` | `system.repeat-last` | Normal | no | no |
+| `help` / `help <topic>` | `system.help` | Normal | no | no |
 
-Queue draining for `CancelsQueuedCommands` is a host/processor policy in v0; the runner does not drain the channel.
+`repeat last` execution is host responsibility (re-enqueue or replay last envelope).
 
 ## Registry
 
-Domain commands (e.g. `helm.set-heading`) are registered by the host via `CommandRegistryBuilder` or DI `configureRegistry`. The engine ships no game-specific definitions.
+Domain commands are registered by the host via `CommandRegistryBuilder` or DI `configureRegistry`. `CommandRegistryValidator` runs on `Build()` and at engine construction (parser keys).
 
-## Ambiguity
+Optional `CommandDefinition.ArgumentParserKey` selects a host-registered `ICommandArgumentParser` for argument tokens after verb phrase matching.
 
-When multiple definitions share a verb, the parser returns `ParseFailureCode.AmbiguousCommand` and ranked `CommandCandidate` entries. Confidence is a v0 heuristic (active context boost, not NLP).
+## Ambiguity and suggestions
+
+When multiple definitions share a verb, the parser returns `ParseFailureCode.AmbiguousCommand` and ranked `CommandCandidate` entries. Confidence is a heuristic (0–1), not NLP.
+
+On `UnknownCommand`, `ParseResult.Suggestions` lists up to three close registered verb phrases (Levenshtein distance) for the current context.
 
 ## Packages
 
 - **Abstractions** — contracts only, no Channels or Microsoft.Extensions
-- **Engine** — parse pipeline
+- **Engine** — parse pipeline, registry validation, argument parser registry
 - **Queueing** — `Channel<CommandEnvelope>` hidden behind `ICommandQueue`
-- **DependencyInjection** — `AddNovolisCommands<TContext>()`
+- **DependencyInjection** — `AddNovolisCommands<TContext>()`, `AddNovolisCommandRunner<TContext>()`
 - **Testing** — fakes for tests and consumers

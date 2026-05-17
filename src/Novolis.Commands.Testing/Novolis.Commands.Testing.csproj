@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Novolis.Commands.Testing</PackageId>
-    <Version>0.1.0-preview.1</Version>
+    <Version>1.0.0</Version>
     <IsPackable>true</IsPackable>
     <Description>Test doubles and helpers for Novolis.Commands.</Description>
     <RootNamespace>Novolis.Commands.Testing</RootNamespace>

@@ -22,4 +22,13 @@ public sealed class RecordingCommandQueue : ICommandQueue
     public IAsyncEnumerable<CommandEnvelope> ReadAllAsync(
         CancellationToken cancellationToken = default)
         => _channel.Reader.ReadAllAsync(cancellationToken);
+
+    public ValueTask ClearPendingAsync(CancellationToken cancellationToken = default)
+    {
+        while (_channel.Reader.TryRead(out _))
+        {
+        }
+
+        return ValueTask.CompletedTask;
+    }
 }

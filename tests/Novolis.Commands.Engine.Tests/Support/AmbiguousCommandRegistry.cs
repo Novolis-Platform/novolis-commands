@@ -10,5 +10,5 @@ public static class AmbiguousCommandRegistry
             .Add("dup.b", "shared", ["scan"])
             .Add("dup.c", "shared", ["lock target"])
             .Add("dup.d", "shared", ["lock target"])
-            .Build();
+            .Build(validate: false);
 }

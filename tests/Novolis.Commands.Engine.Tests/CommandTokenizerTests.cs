@@ -15,6 +15,7 @@ public sealed class CommandTokenizerTests
         ("belay that", ["belay", "that"]),
         ("help tactical", ["help", "tactical"]),
         ("helm, set heading to 122", ["helm", "set", "heading", "to", "122"]),
+        ("helm, set course 123,5 by 119,4", ["helm", "set", "course", "123,5", "by", "119,4"]),
         ("tactical, lock target!", ["tactical", "lock", "target"])
     ];
 

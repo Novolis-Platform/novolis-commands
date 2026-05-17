@@ -11,7 +11,8 @@ public static class CommandEngineTestRegistry
     public static ICommandRegistry CreateBridge() =>
         new CommandRegistryBuilder()
             .Add("helm.set-heading", "helm",
-                ["set heading to", "set heading", "heading"])
+                ["set heading to", "set heading", "set course", "heading", "course"],
+                "heading3d")
             .Add("helm.come-about", "helm", ["come about"])
             .Add("helm.all-ahead-full", "helm", ["all ahead full", "ahead full"])
             .Add("helm.full-stop", "helm", ["full stop", "all stop"])

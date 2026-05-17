@@ -1,7 +1,22 @@
+using System.Collections.Frozen;
+
 namespace Novolis.Commands.Engine;
 
-public sealed class CommandParser(ICommandRegistry registry)
+public sealed class CommandParser
 {
+    private readonly ICommandRegistry _registry;
+    private readonly FrozenDictionary<string, ICommandArgumentParser> _argumentParsers;
+    private readonly CommandSuggestionService _suggestions = new();
+
+    public CommandParser(
+        ICommandRegistry registry,
+        IReadOnlyDictionary<string, ICommandArgumentParser>? argumentParsers = null)
+    {
+        _registry = registry;
+        _argumentParsers = argumentParsers?.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase)
+            ?? FrozenDictionary<string, ICommandArgumentParser>.Empty;
+    }
+
     public ParseResult Parse(
         string originalPrompt,
         string normalizedPrompt,
@@ -37,8 +52,10 @@ public sealed class CommandParser(ICommandRegistry registry)
                         explicitContextWord));
             }
 
+            var suggestions = _suggestions.Suggest(tokens, verbStartIndex, contextWord, _registry);
             return ParseResult.Failed(
-                new ParseFailure(ParseFailureCode.UnknownCommand, "Unknown command.", normalizedPrompt));
+                [new ParseFailure(ParseFailureCode.UnknownCommand, "Unknown command.", normalizedPrompt)],
+                suggestions);
         }
 
         var bestLength = matches.Max(m => m.PhraseLength);
@@ -62,8 +79,37 @@ public sealed class CommandParser(ICommandRegistry registry)
         string[] argumentTokens,
         string? contextWord)
     {
-        if (string.Equals(definition.Name, "helm.set-heading", StringComparison.Ordinal))
-            return BuildHeadingSuccess(originalPrompt, argumentTokens, contextWord ?? definition.ContextWord);
+        if (definition.ArgumentParserKey is not null)
+        {
+            if (!_argumentParsers.TryGetValue(definition.ArgumentParserKey, out var parser))
+            {
+                return ParseResult.Failed(
+                    new ParseFailure(
+                        ParseFailureCode.InvalidArgument,
+                        $"No argument parser registered for key '{definition.ArgumentParserKey}'.",
+                        definition.ArgumentParserKey));
+            }
+
+            if (!parser.TryParse(definition, argumentTokens, out var parsedArguments, out var failure))
+            {
+                return failure is not null
+                    ? ParseResult.Failed(failure)
+                    : ParseResult.Failed(
+                        new ParseFailure(
+                            ParseFailureCode.InvalidArgument,
+                            "Invalid arguments.",
+                            string.Join(" ", argumentTokens)));
+            }
+
+            return ParseResult.Succeeded(new CommandEnvelope
+            {
+                Id = CommandId.New(),
+                Name = definition.Name,
+                OriginalPrompt = originalPrompt,
+                ContextWord = contextWord,
+                Arguments = parsedArguments
+            });
+        }
 
         var arguments = new Dictionary<string, object?>();
         var argDefs = definition.Arguments;
@@ -121,45 +167,6 @@ public sealed class CommandParser(ICommandRegistry registry)
         {
             Id = CommandId.New(),
             Name = definition.Name,
-            OriginalPrompt = originalPrompt,
-            ContextWord = contextWord,
-            Arguments = arguments
-        };
-
-        return ParseResult.Succeeded(envelope);
-    }
-
-    private static ParseResult BuildHeadingSuccess(
-        string originalPrompt,
-        string[] argumentTokens,
-        string? contextWord)
-    {
-        if (argumentTokens.Length == 0)
-        {
-            return ParseResult.Failed(
-                new ParseFailure(
-                    ParseFailureCode.MissingArgument,
-                    "Missing required argument 'heading'.",
-                    "heading"));
-        }
-
-        if (!HeadingArgumentParser.TryParse(argumentTokens, out var heading, out var headingBy))
-        {
-            return ParseResult.Failed(
-                new ParseFailure(
-                    ParseFailureCode.InvalidArgument,
-                    "Invalid heading. Use: 270 | 122 by 180 | 122 mark 6 by 180",
-                    string.Join(" ", argumentTokens)));
-        }
-
-        var arguments = new Dictionary<string, object?> { ["heading"] = heading };
-        if (headingBy is double by)
-            arguments["headingBy"] = by;
-
-        var envelope = new CommandEnvelope
-        {
-            Id = CommandId.New(),
-            Name = "helm.set-heading",
             OriginalPrompt = originalPrompt,
             ContextWord = contextWord,
             Arguments = arguments
@@ -230,7 +237,7 @@ public sealed class CommandParser(ICommandRegistry registry)
     {
         var matches = new List<(CommandDefinition, int)>();
 
-        foreach (var definition in registry.GetAll())
+        foreach (var definition in _registry.GetAll())
         {
             if (contextWord is not null &&
                 (definition.ContextWord is null ||
@@ -274,5 +281,5 @@ public sealed class CommandParser(ICommandRegistry registry)
         return true;
     }
 
-    private bool HasContext(string contextWord) => registry.IsKnownContext(contextWord);
+    private bool HasContext(string contextWord) => _registry.IsKnownContext(contextWord);
 }

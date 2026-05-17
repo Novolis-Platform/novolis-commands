@@ -8,4 +8,9 @@ public interface ICommandQueue
 
     IAsyncEnumerable<CommandEnvelope> ReadAllAsync(
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Removes commands waiting in the queue that have not started executing.
+    /// </summary>
+    ValueTask ClearPendingAsync(CancellationToken cancellationToken = default);
 }

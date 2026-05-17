@@ -264,7 +264,7 @@ public static class CommandEngineTestCases
 
     private static IEnumerable<ParseCase> InvalidHeadingSweep()
     {
-        foreach (var bad in new[] { "north", "south", "port", "starboard", "infinity", "NaN", "abc", "12.5" })
+        foreach (var bad in new[] { "north", "south", "port", "starboard", "infinity", "NaN", "abc" })
         {
             yield return Case(
                 $"fail-heading-{bad.Replace('.', '-')}",

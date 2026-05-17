@@ -9,7 +9,7 @@ namespace Novolis.Commands.Engine.Tests.Support.Bridge;
 internal static class BridgeSceneRunner
 {
     public static CommandEngine<TestCommandContext> CreateEngine() =>
-        new(CommandEngineTestRegistry.CreateBridge(), new TestCommandContextResolver());
+        CommandEngineTestSupport.CreateBridge();
 
     public static async Task PlayParseSceneAsync(BridgeScene scene)
     {

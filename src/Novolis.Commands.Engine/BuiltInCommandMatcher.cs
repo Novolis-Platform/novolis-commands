@@ -1,44 +1,17 @@
+using System.Collections.Frozen;
+
 namespace Novolis.Commands.Engine;
 
 public sealed class BuiltInCommandMatcher
 {
-    private static readonly Dictionary<string, Func<string, CommandEnvelope>> Phrases =
-        new(StringComparer.OrdinalIgnoreCase)
+    private static readonly FrozenDictionary<string, Func<string, CommandEnvelope>> Phrases =
+        new Dictionary<string, Func<string, CommandEnvelope>>(StringComparer.OrdinalIgnoreCase)
         {
-            ["belay that"] = prompt => new CommandEnvelope
-            {
-                Id = CommandId.New(),
-                Name = BuiltInCommands.BelayThat,
-                OriginalPrompt = prompt,
-                ContextWord = null,
-                Arguments = new Dictionary<string, object?>(),
-                Priority = CommandPriority.Emergency,
-                InterruptsCurrentCommand = true,
-                CancelsQueuedCommands = false
-            },
-            ["clear queue"] = prompt => new CommandEnvelope
-            {
-                Id = CommandId.New(),
-                Name = BuiltInCommands.ClearQueue,
-                OriginalPrompt = prompt,
-                ContextWord = null,
-                Arguments = new Dictionary<string, object?>(),
-                Priority = CommandPriority.High,
-                InterruptsCurrentCommand = false,
-                CancelsQueuedCommands = true
-            },
-            ["repeat last"] = prompt => new CommandEnvelope
-            {
-                Id = CommandId.New(),
-                Name = BuiltInCommands.RepeatLast,
-                OriginalPrompt = prompt,
-                ContextWord = null,
-                Arguments = new Dictionary<string, object?>(),
-                Priority = CommandPriority.Normal,
-                InterruptsCurrentCommand = false,
-                CancelsQueuedCommands = false
-            }
-        };
+            ["belay that"] = CreateBuiltIn(BuiltInCommands.BelayThat, CommandPriority.Emergency, interrupt: true),
+            ["clear queue"] = CreateBuiltIn(BuiltInCommands.ClearQueue, CommandPriority.High, cancelQueue: true),
+            ["repeat last"] = CreateBuiltIn(BuiltInCommands.RepeatLast, CommandPriority.Normal),
+            ["help"] = CreateHelp(null)
+        }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
     public bool TryMatch(string normalizedPrompt, out CommandEnvelope? envelope)
     {
@@ -48,7 +21,42 @@ public sealed class BuiltInCommandMatcher
             return true;
         }
 
+        if (normalizedPrompt.AsSpan().StartsWith("help ", StringComparison.Ordinal))
+        {
+            var topic = normalizedPrompt.AsSpan(5..).Trim().ToString();
+            envelope = CreateHelp(string.IsNullOrEmpty(topic) ? null : topic)(normalizedPrompt);
+            return true;
+        }
+
         envelope = null;
         return false;
     }
+
+    private static Func<string, CommandEnvelope> CreateBuiltIn(
+        string name,
+        CommandPriority priority,
+        bool interrupt = false,
+        bool cancelQueue = false) =>
+        prompt => new CommandEnvelope
+        {
+            Id = CommandId.New(),
+            Name = name,
+            OriginalPrompt = prompt,
+            ContextWord = null,
+            Arguments = new Dictionary<string, object?>(),
+            Priority = priority,
+            InterruptsCurrentCommand = interrupt,
+            CancelsQueuedCommands = cancelQueue
+        };
+
+    private static Func<string, CommandEnvelope> CreateHelp(string? topic) =>
+        prompt => new CommandEnvelope
+        {
+            Id = CommandId.New(),
+            Name = BuiltInCommands.Help,
+            OriginalPrompt = prompt,
+            ContextWord = null,
+            Arguments = new Dictionary<string, object?> { ["topic"] = topic },
+            Priority = CommandPriority.Normal
+        };
 }

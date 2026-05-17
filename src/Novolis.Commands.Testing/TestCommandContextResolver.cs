@@ -4,5 +4,8 @@ public sealed class TestCommandContextResolver : ICommandContextResolver<TestCom
 {
     public string? GetActiveContextWord(TestCommandContext context) => context.ActiveContextWord;
 
-    public IReadOnlyDictionary<string, string> GetAliases(TestCommandContext context) => context.Aliases;
+    public IReadOnlyDictionary<string, string> GetContextAliases(TestCommandContext context) =>
+        context.ContextAliases;
+
+    public IReadOnlyDictionary<string, string> GetVerbAliases(TestCommandContext context) => context.Aliases;
 }

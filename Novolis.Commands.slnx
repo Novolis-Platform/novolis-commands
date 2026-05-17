@@ -7,6 +7,7 @@
     <Project Path="src/Novolis.Commands.Testing/Novolis.Commands.Testing.csproj" />
   </Folder>
   <Folder Name="/tests/">
+    <Project Path="tests/Novolis.Commands.Abstractions.Tests/Novolis.Commands.Abstractions.Tests.csproj" />
     <Project Path="tests/Novolis.Commands.Engine.Tests/Novolis.Commands.Engine.Tests.csproj" />
     <Project Path="tests/Novolis.Commands.Queueing.Tests/Novolis.Commands.Queueing.Tests.csproj" />
   </Folder>

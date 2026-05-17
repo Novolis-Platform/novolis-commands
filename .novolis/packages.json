@@ -3,6 +3,7 @@
     "Novolis.Commands.Abstractions": {
       "paths": [
         "src/Novolis.Commands.Abstractions/**",
+        "tests/Novolis.Commands.Abstractions.Tests/**",
         "Directory.Build.props",
         "Directory.Packages.props",
         "global.json"

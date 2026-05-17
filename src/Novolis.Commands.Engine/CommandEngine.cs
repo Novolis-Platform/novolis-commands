@@ -25,42 +25,42 @@ public sealed class CommandEngine<TContext>(
         var normalized = trimmed.ToLowerInvariant();
 
         if (_builtInMatcher.TryMatch(normalized, out var builtIn))
-        {
             return ValueTask.FromResult(ParseResult.Succeeded(builtIn!));
-        }
 
-        var tokens = normalized.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
-        var aliases = contextResolver.GetAliases(context);
-        var activeContext = contextResolver.GetActiveContextWord(context);
-
-        string? explicitContext = null;
-        var verbStartIndex = 0;
-
-        if (tokens.Length > 0 && IsKnownContext(tokens[0]))
-        {
-            explicitContext = tokens[0];
-            verbStartIndex = 1;
-        }
-
-        if (verbStartIndex >= tokens.Length)
+        var tokens = CommandTokenizer.Tokenize(normalized);
+        if (tokens.Length == 0)
         {
             return ValueTask.FromResult(ParseResult.Failed(
                 new ParseFailure(ParseFailureCode.UnknownCommand, "Unknown command.", trimmed)));
         }
 
-        var result = _parser.Parse(
-            trimmed,
-            normalized,
-            tokens,
-            explicitContext,
-            activeContext,
-            aliases);
+        var contextAliases = contextResolver.GetContextAliases(context);
+        var explicitContext = ResolveContextWord(tokens[0], contextAliases);
 
+        if (explicitContext is null)
+        {
+            return ValueTask.FromResult(ParseResult.Failed(
+                new ParseFailure(
+                    ParseFailureCode.UnknownContext,
+                    "Orders must start with a station prefix (e.g. helm, tactical, weaps, pilot).",
+                    tokens[0])));
+        }
+
+        var verbAliases = contextResolver.GetVerbAliases(context);
+        var result = _parser.Parse(trimmed, normalized, tokens, explicitContext, verbAliases);
         return ValueTask.FromResult(result);
     }
 
-    private bool IsKnownContext(string token) =>
-        registry.GetAll().Any(d =>
-            d.ContextWord is not null &&
-            string.Equals(d.ContextWord, token, StringComparison.OrdinalIgnoreCase));
+    private string? ResolveContextWord(string firstToken, IReadOnlyDictionary<string, string> contextAliases)
+    {
+        if (contextAliases.TryGetValue(firstToken, out var alias))
+            return alias;
+
+        if (IsKnownContext(firstToken))
+            return firstToken;
+
+        return null;
+    }
+
+    private bool IsKnownContext(string token) => registry.IsKnownContext(token);
 }

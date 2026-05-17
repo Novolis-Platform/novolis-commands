@@ -14,8 +14,9 @@ public class CommandEngineTests
             .Add(
                 "helm.set-heading",
                 context: "helm",
-                verbs: ["heading"],
+                verbs: ["heading", "set heading"],
                 CommandArgumentDefinition.Integer("heading", required: true))
+            .Add("helm.full-stop", "helm", ["full stop", "all stop"])
             .Build();
 
     [Test]
@@ -29,6 +30,30 @@ public class CommandEngineTests
         await Assert.That(result.Success).IsTrue();
         await Assert.That(result.Command!.Name).IsEqualTo("helm.set-heading");
         await Assert.That(result.Command.Arguments["heading"]).IsEqualTo(270);
+    }
+
+    [Test]
+    public async Task ParseCommandAsync_Should_Parse_MultiWord_Phrase()
+    {
+        var engine = CreateEngine(HelmRegistry());
+        var context = new TestCommandContext();
+
+        var result = await engine.ParseCommandAsync("helm full stop", context);
+
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Command!.Name).IsEqualTo("helm.full-stop");
+    }
+
+    [Test]
+    public async Task ParseCommandAsync_Should_Parse_Set_Heading_Phrase()
+    {
+        var engine = CreateEngine(HelmRegistry());
+        var context = new TestCommandContext();
+
+        var result = await engine.ParseCommandAsync("helm set heading 180", context);
+
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Command!.Arguments["heading"]).IsEqualTo(180);
     }
 
     [Test]
@@ -46,12 +71,37 @@ public class CommandEngineTests
     }
 
     [Test]
+    public async Task ParseCommandAsync_Should_Parse_Help()
+    {
+        var engine = CreateEngine(HelmRegistry());
+        var context = new TestCommandContext();
+
+        var result = await engine.ParseCommandAsync("help tactical", context);
+
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Command!.Name).IsEqualTo(BuiltInCommands.Help);
+        await Assert.That(result.Command.Arguments["topic"]).IsEqualTo("tactical");
+    }
+
+    [Test]
+    public async Task ParseCommandAsync_Should_Return_UnknownContext_Without_Prefix()
+    {
+        var engine = CreateEngine(HelmRegistry());
+        var context = new TestCommandContext();
+
+        var result = await engine.ParseCommandAsync("heading 270", context);
+
+        await Assert.That(result.Success).IsFalse();
+        await Assert.That(result.Failures[0].Code).IsEqualTo(ParseFailureCode.UnknownContext);
+    }
+
+    [Test]
     public async Task ParseCommandAsync_Should_Return_Failure_For_Unknown_Command()
     {
         var engine = CreateEngine(HelmRegistry());
         var context = new TestCommandContext();
 
-        var result = await engine.ParseCommandAsync("do the thing", context);
+        var result = await engine.ParseCommandAsync("helm do the thing", context);
 
         await Assert.That(result.Success).IsFalse();
         await Assert.That(result.Failures.Any(x => x.Code == ParseFailureCode.UnknownCommand)).IsTrue();
@@ -70,21 +120,35 @@ public class CommandEngineTests
     }
 
     [Test]
-    public async Task ParseCommandAsync_Should_Return_Ambiguous_Command_With_Candidates()
+    public async Task ParseCommandAsync_Should_Resolve_Context_Alias()
+    {
+        var engine = CreateEngine(HelmRegistry());
+        var context = new TestCommandContext
+        {
+            ContextAliases = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
+            {
+                ["pilot"] = "helm"
+            }
+        };
+
+        var result = await engine.ParseCommandAsync("pilot heading 90", context);
+
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Command!.ContextWord).IsEqualTo("helm");
+    }
+
+    [Test]
+    public async Task ParseCommandAsync_Should_Parse_Nav_MultiWord_Destination()
     {
         var registry = new CommandRegistryBuilder()
-            .Add("tactical.fire-weapons", "tactical", ["fire"])
-            .Add("crew.dismiss-personnel", "admin", ["fire"])
+            .Add("nav.set-course", "nav", ["set course", "course"],
+                CommandArgumentDefinition.String("destination", required: true))
             .Build();
 
         var engine = CreateEngine(registry);
-        var context = new TestCommandContext();
+        var result = await engine.ParseCommandAsync("nav set course alpha centauri", new TestCommandContext());
 
-        var result = await engine.ParseCommandAsync("fire", context);
-
-        await Assert.That(result.Success).IsFalse();
-        await Assert.That(result.Failures[0].Code).IsEqualTo(ParseFailureCode.AmbiguousCommand);
-        await Assert.That(result.Candidates.Count).IsGreaterThanOrEqualTo(2);
-        await Assert.That(result.Candidates[0].Name).IsEqualTo("tactical.fire-weapons");
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Command!.Arguments["destination"]).IsEqualTo("alpha centauri");
     }
 }

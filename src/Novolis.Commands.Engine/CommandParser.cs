@@ -7,8 +7,7 @@ public sealed class CommandParser(ICommandRegistry registry)
         string normalizedPrompt,
         IReadOnlyList<string> tokens,
         string? explicitContextWord,
-        string? activeContextWord,
-        IReadOnlyDictionary<string, string> aliases)
+        IReadOnlyDictionary<string, string> verbAliases)
     {
         if (tokens.Count == 0)
         {
@@ -16,7 +15,7 @@ public sealed class CommandParser(ICommandRegistry registry)
                 new ParseFailure(ParseFailureCode.UnknownCommand, "No command verb found.", normalizedPrompt));
         }
 
-        var contextWord = explicitContextWord ?? activeContextWord;
+        var contextWord = explicitContextWord;
         var verbStartIndex = explicitContextWord is not null ? 1 : 0;
 
         if (verbStartIndex >= tokens.Count)
@@ -25,9 +24,7 @@ public sealed class CommandParser(ICommandRegistry registry)
                 new ParseFailure(ParseFailureCode.UnknownCommand, "No command verb found.", normalizedPrompt));
         }
 
-        var verb = tokens[verbStartIndex];
-        var resolvedVerb = ResolveAlias(verb, aliases);
-        var matches = FindMatches(resolvedVerb, contextWord, activeContextWord);
+        var matches = FindPhraseMatches(tokens, verbStartIndex, contextWord, verbAliases);
 
         if (matches.Count == 0)
         {
@@ -41,17 +38,22 @@ public sealed class CommandParser(ICommandRegistry registry)
             }
 
             return ParseResult.Failed(
-                new ParseFailure(ParseFailureCode.UnknownCommand, "Unknown command.", verb));
+                new ParseFailure(ParseFailureCode.UnknownCommand, "Unknown command.", normalizedPrompt));
         }
 
-        if (matches.Count > 1)
+        var bestLength = matches.Max(m => m.PhraseLength);
+        var longest = matches.Where(m => m.PhraseLength == bestLength).ToList();
+
+        if (longest.Select(m => m.Definition.Name).Distinct().Count() > 1)
         {
-            return BuildAmbiguousResult(verb, matches, activeContextWord);
+            return BuildAmbiguousResult(
+                string.Join(" ", tokens.Skip(verbStartIndex).Take(bestLength)),
+                longest.Select(m => m.Definition).Distinct().ToList());
         }
 
-        var definition = matches[0];
-        var argumentTokens = tokens.Skip(verbStartIndex + 1).ToArray();
-        return BuildSuccess(originalPrompt, definition, argumentTokens, contextWord ?? definition.ContextWord);
+        var match = longest[0];
+        var argumentTokens = tokens.Skip(verbStartIndex + match.PhraseLength).ToArray();
+        return BuildSuccess(originalPrompt, match.Definition, argumentTokens, contextWord ?? match.Definition.ContextWord);
     }
 
     private ParseResult BuildSuccess(
@@ -61,10 +63,14 @@ public sealed class CommandParser(ICommandRegistry registry)
         string? contextWord)
     {
         var arguments = new Dictionary<string, object?>();
+        var argDefs = definition.Arguments;
         var argIndex = 0;
 
-        foreach (var argDef in definition.Arguments)
+        for (var i = 0; i < argDefs.Count; i++)
         {
+            var argDef = argDefs[i];
+            var isLast = i == argDefs.Count - 1;
+
             if (argIndex >= argumentTokens.Length)
             {
                 if (argDef.Required)
@@ -76,6 +82,13 @@ public sealed class CommandParser(ICommandRegistry registry)
                             argDef.Name));
                 }
 
+                continue;
+            }
+
+            if (argDef.Kind == CommandArgumentKind.String && isLast)
+            {
+                arguments[argDef.Name] = string.Join(" ", argumentTokens[argIndex..]);
+                argIndex = argumentTokens.Length;
                 continue;
             }
 
@@ -135,18 +148,15 @@ public sealed class CommandParser(ICommandRegistry registry)
         }
     }
 
-    private ParseResult BuildAmbiguousResult(
-        string verb,
-        IReadOnlyList<CommandDefinition> matches,
-        string? activeContextWord)
+    private ParseResult BuildAmbiguousResult(string fragment, IReadOnlyList<CommandDefinition> matches)
     {
         var candidates = matches
             .Select(m => new CommandCandidate(
                 m.Name,
                 m.ContextWord,
                 new Dictionary<string, object?>(),
-                ScoreMatch(m, activeContextWord),
-                DescribeMatch(m, activeContextWord)))
+                0.5,
+                $"Matches {m.ContextWord ?? "global"} phrase."))
             .OrderByDescending(c => c.Confidence)
             .ToArray();
 
@@ -155,75 +165,63 @@ public sealed class CommandParser(ICommandRegistry registry)
             Success = false,
             Failures =
             [
-                new ParseFailure(ParseFailureCode.AmbiguousCommand, "Command is ambiguous.", verb)
+                new ParseFailure(ParseFailureCode.AmbiguousCommand, "Command is ambiguous.", fragment)
             ],
             Candidates = candidates
         };
     }
 
-    private static double ScoreMatch(CommandDefinition definition, string? activeContextWord)
+    private List<(CommandDefinition Definition, int PhraseLength)> FindPhraseMatches(
+        IReadOnlyList<string> tokens,
+        int verbStartIndex,
+        string? contextWord,
+        IReadOnlyDictionary<string, string> verbAliases)
     {
-        var score = 0.5;
-        if (definition.ContextWord is not null &&
-            string.Equals(definition.ContextWord, activeContextWord, StringComparison.OrdinalIgnoreCase))
-        {
-            score += 0.12;
-        }
-
-        return Math.Min(score, 0.99);
-    }
-
-    private static string DescribeMatch(CommandDefinition definition, string? activeContextWord) =>
-        definition.ContextWord is not null &&
-        string.Equals(definition.ContextWord, activeContextWord, StringComparison.OrdinalIgnoreCase)
-            ? "Matches active context."
-            : $"Matches {definition.ContextWord ?? "global"} verb.";
-
-    private List<CommandDefinition> FindMatches(string verb, string? contextWord, string? activeContextWord)
-    {
-        var results = new List<CommandDefinition>();
+        var matches = new List<(CommandDefinition, int)>();
 
         foreach (var definition in registry.GetAll())
         {
-            if (!definition.Verbs.Any(v => string.Equals(v, verb, StringComparison.OrdinalIgnoreCase)))
+            if (contextWord is not null &&
+                (definition.ContextWord is null ||
+                 !string.Equals(definition.ContextWord, contextWord, StringComparison.OrdinalIgnoreCase)))
                 continue;
 
-            if (contextWord is not null)
+            foreach (var verb in definition.Verbs)
             {
-                if (definition.ContextWord is null ||
-                    !string.Equals(definition.ContextWord, contextWord, StringComparison.OrdinalIgnoreCase))
+                var phraseTokens = verb.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
+                if (phraseTokens.Length == 0)
                     continue;
-            }
-            else if (definition.ContextWord is not null &&
-                     activeContextWord is not null &&
-                     !string.Equals(definition.ContextWord, activeContextWord, StringComparison.OrdinalIgnoreCase))
-            {
-                continue;
-            }
 
-            results.Add(definition);
-        }
-
-        if (results.Count > 1 && contextWord is null)
-            return results;
-
-        if (results.Count == 0 && contextWord is null)
-        {
-            foreach (var definition in registry.GetAll())
-            {
-                if (definition.Verbs.Any(v => string.Equals(v, verb, StringComparison.OrdinalIgnoreCase)))
-                    results.Add(definition);
+                var resolvedPhrase = ResolveVerbPhrase(phraseTokens, verbAliases);
+                if (TokensMatch(tokens, verbStartIndex, resolvedPhrase))
+                    matches.Add((definition, resolvedPhrase.Length));
             }
         }
 
-        return results;
+        return matches;
     }
 
-    private bool HasContext(string contextWord) =>
-        registry.GetAll().Any(d =>
-            d.ContextWord is not null &&
-            string.Equals(d.ContextWord, contextWord, StringComparison.OrdinalIgnoreCase));
+    private static string[] ResolveVerbPhrase(string[] phraseTokens, IReadOnlyDictionary<string, string> verbAliases)
+    {
+        if (phraseTokens.Length == 1 && verbAliases.TryGetValue(phraseTokens[0], out var alias))
+            return alias.Split((char[]?)null, StringSplitOptions.RemoveEmptyEntries);
 
-    private static string ResolveAlias(string token, IReadOnlyDictionary<string, string> aliases) =>
-        aliases.TryGetValue(token, out var resolved) ? resolved : token;
+        return phraseTokens;
+    }
+
+    private static bool TokensMatch(IReadOnlyList<string> tokens, int startIndex, string[] phraseTokens)
+    {
+        if (startIndex + phraseTokens.Length > tokens.Count)
+            return false;
+
+        for (var i = 0; i < phraseTokens.Length; i++)
+        {
+            if (!string.Equals(tokens[startIndex + i], phraseTokens[i], StringComparison.OrdinalIgnoreCase))
+                return false;
+        }
+
+        return true;
+    }
+
+    private bool HasContext(string contextWord) => registry.IsKnownContext(contextWord);
 }

@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Novolis.Commands.Engine</PackageId>
+    <Version>0.1.0-preview.1</Version>
+    <IsPackable>true</IsPackable>
+    <Description>Parse prompts into command envelopes without executing domain behavior.</Description>
+    <RootNamespace>Novolis.Commands.Engine</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Novolis.Commands.Abstractions\Novolis.Commands.Abstractions.csproj" />
+  </ItemGroup>
+</Project>

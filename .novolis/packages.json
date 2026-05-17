@@ -1,0 +1,51 @@
+{
+  "packages": {
+    "Novolis.Commands.Abstractions": {
+      "paths": [
+        "src/Novolis.Commands.Abstractions/**",
+        "Directory.Build.props",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "project": "src/Novolis.Commands.Abstractions/Novolis.Commands.Abstractions.csproj"
+    },
+    "Novolis.Commands.Engine": {
+      "paths": [
+        "src/Novolis.Commands.Engine/**",
+        "tests/Novolis.Commands.Engine.Tests/**",
+        "Directory.Build.props",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "project": "src/Novolis.Commands.Engine/Novolis.Commands.Engine.csproj"
+    },
+    "Novolis.Commands.Queueing": {
+      "paths": [
+        "src/Novolis.Commands.Queueing/**",
+        "tests/Novolis.Commands.Queueing.Tests/**",
+        "Directory.Build.props",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "project": "src/Novolis.Commands.Queueing/Novolis.Commands.Queueing.csproj"
+    },
+    "Novolis.Commands.DependencyInjection": {
+      "paths": [
+        "src/Novolis.Commands.DependencyInjection/**",
+        "Directory.Build.props",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "project": "src/Novolis.Commands.DependencyInjection/Novolis.Commands.DependencyInjection.csproj"
+    },
+    "Novolis.Commands.Testing": {
+      "paths": [
+        "src/Novolis.Commands.Testing/**",
+        "Directory.Build.props",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "project": "src/Novolis.Commands.Testing/Novolis.Commands.Testing.csproj"
+    }
+  }
+}

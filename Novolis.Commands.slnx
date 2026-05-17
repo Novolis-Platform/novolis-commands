@@ -1,0 +1,13 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Novolis.Commands.Abstractions/Novolis.Commands.Abstractions.csproj" />
+    <Project Path="src/Novolis.Commands.Engine/Novolis.Commands.Engine.csproj" />
+    <Project Path="src/Novolis.Commands.Queueing/Novolis.Commands.Queueing.csproj" />
+    <Project Path="src/Novolis.Commands.DependencyInjection/Novolis.Commands.DependencyInjection.csproj" />
+    <Project Path="src/Novolis.Commands.Testing/Novolis.Commands.Testing.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Novolis.Commands.Engine.Tests/Novolis.Commands.Engine.Tests.csproj" />
+    <Project Path="tests/Novolis.Commands.Queueing.Tests/Novolis.Commands.Queueing.Tests.csproj" />
+  </Folder>
+</Solution>

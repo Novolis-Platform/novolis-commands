@@ -1,9 +1,12 @@
 namespace Novolis.Commands;
 
+/// <summary>Represents ICommandQueue.</summary>
 public interface ICommandQueue
+/// <summary>EnqueueAsync operation.</summary>
 {
     ValueTask EnqueueAsync(
         CommandEnvelope command,
+        /// <summary>ReadAllAsync operation.</summary>
         CancellationToken cancellationToken = default);
 
     IAsyncEnumerable<CommandEnvelope> ReadAllAsync(

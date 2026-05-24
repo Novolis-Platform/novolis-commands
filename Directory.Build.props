@@ -3,10 +3,9 @@
     <PropertyGroup>
     <NovolisGitHubRepository>novolis-commands</NovolisGitHubRepository>
   </PropertyGroup>
-<Import Project="$(MSBuildThisFileDirectory).novolis\version.props"
-          Condition="Exists('$(MSBuildThisFileDirectory).novolis\version.props')" />
-
-  <PropertyGroup Label="Local NuGet feed">
+  <Import Project="$(MSBuildThisFileDirectory)build\version.props"
+          Condition="Exists('$(MSBuildThisFileDirectory)build\version.props')" />
+<PropertyGroup Label="Local NuGet feed">
     <NovolisLocalFeed Condition="'$(NovolisLocalFeed)' == ''">$(NOVOLIS_LOCAL_FEED)</NovolisLocalFeed>
     <NovolisLocalFeed Condition="'$(NovolisLocalFeed)' == ''">$(MSBuildThisFileDirectory)..\artifacts\nuget-local</NovolisLocalFeed>
   </PropertyGroup>

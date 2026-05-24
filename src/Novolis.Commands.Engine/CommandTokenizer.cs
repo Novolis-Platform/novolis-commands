@@ -3,8 +3,7 @@ using System.Buffers;
 namespace Novolis.Commands.Engine;
 
 /// <summary>
-/// Splits normalized command prompts into tokens using .NET whitespace rules
-/// (<see cref="MemoryExtensions.SplitAny(ReadOnlySpan{char}, SearchValues{char})"/>),
+/// Splits normalized command prompts into tokens using .NET whitespace rules,
 /// then trims leading/trailing punctuation from each token.
 /// </summary>
 public static class CommandTokenizer
@@ -12,6 +11,9 @@ public static class CommandTokenizer
     private static readonly SearchValues<char> Whitespace = SearchValues.Create(" \t\r\n\v\f");
     private static readonly SearchValues<char> Punctuation = SearchValues.Create(",;:.!?");
 
+    /// <summary>Tokenizes a normalized prompt string.</summary>
+    /// <param name="normalized">Lowercased, trimmed prompt.</param>
+    /// <returns>Non-empty tokens with punctuation trimmed.</returns>
     public static string[] Tokenize(string normalized)
     {
         if (normalized.Length == 0)

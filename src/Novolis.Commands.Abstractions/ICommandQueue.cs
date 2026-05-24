@@ -1,19 +1,21 @@
 namespace Novolis.Commands;
 
-/// <summary>Represents ICommandQueue.</summary>
+/// <summary>Thread-safe queue of <see cref="CommandEnvelope"/> instances for sequential execution.</summary>
 public interface ICommandQueue
-/// <summary>EnqueueAsync operation.</summary>
 {
+    /// <summary>Adds a command to the queue.</summary>
+    /// <param name="command">Command to enqueue.</param>
+    /// <param name="cancellationToken">Cancellation token.</param>
     ValueTask EnqueueAsync(
         CommandEnvelope command,
-        /// <summary>ReadAllAsync operation.</summary>
         CancellationToken cancellationToken = default);
 
+    /// <summary>Reads commands as they become available.</summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
     IAsyncEnumerable<CommandEnvelope> ReadAllAsync(
         CancellationToken cancellationToken = default);
 
-    /// <summary>
-    /// Removes commands waiting in the queue that have not started executing.
-    /// </summary>
+    /// <summary>Removes commands waiting in the queue that have not started executing.</summary>
+    /// <param name="cancellationToken">Cancellation token.</param>
     ValueTask ClearPendingAsync(CancellationToken cancellationToken = default);
 }

@@ -5,6 +5,7 @@ namespace Novolis.Commands.Engine;
 /// </summary>
 public interface ICommandArgumentParser
 {
+    /// <summary>Attempts to parse trailing tokens into named arguments.</summary>
     bool TryParse(
         CommandDefinition definition,
         IReadOnlyList<string> argumentTokens,

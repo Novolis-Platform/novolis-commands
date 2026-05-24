@@ -2,12 +2,14 @@ using System.Collections.Frozen;
 
 namespace Novolis.Commands.Engine;
 
+/// <summary>Matches tokenized prompts against registered commands and builds envelopes.</summary>
 public sealed class CommandParser
 {
     private readonly ICommandRegistry _registry;
     private readonly FrozenDictionary<string, ICommandArgumentParser> _argumentParsers;
     private readonly CommandSuggestionService _suggestions = new();
 
+    /// <summary>Creates a parser bound to a command registry.</summary>
     public CommandParser(
         ICommandRegistry registry,
         IReadOnlyDictionary<string, ICommandArgumentParser>? argumentParsers = null)
@@ -17,6 +19,7 @@ public sealed class CommandParser
             ?? FrozenDictionary<string, ICommandArgumentParser>.Empty;
     }
 
+    /// <summary>Parses tokenized input into a <see cref="ParseResult"/>.</summary>
     public ParseResult Parse(
         string originalPrompt,
         string normalizedPrompt,

@@ -1,11 +1,14 @@
 namespace Novolis.Commands.Queueing;
 
+/// <summary>Dequeues commands and invokes <see cref="ICommandProcessor{TContext}"/> with interrupt semantics.</summary>
+/// <typeparam name="TContext">Execution context type.</typeparam>
 public sealed class CommandQueueRunner<TContext>(
     ICommandQueue queue,
     ICommandProcessor<TContext> processor)
 {
     private CancellationTokenSource? _currentCommandCts;
 
+    /// <summary>Processes commands from the queue until cancellation.</summary>
     public async Task RunAsync(TContext context, CancellationToken cancellationToken)
     {
         Task? inFlight = null;

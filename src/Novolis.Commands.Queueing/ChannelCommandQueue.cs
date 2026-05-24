@@ -2,6 +2,7 @@ using System.Threading.Channels;
 
 namespace Novolis.Commands.Queueing;
 
+/// <summary>Unbounded channel-backed <see cref="ICommandQueue"/>.</summary>
 public sealed class ChannelCommandQueue : ICommandQueue
 {
     private readonly Channel<CommandEnvelope> _channel =
@@ -12,6 +13,7 @@ public sealed class ChannelCommandQueue : ICommandQueue
             AllowSynchronousContinuations = false
         });
 
+    /// <inheritdoc />
     public async ValueTask EnqueueAsync(
         CommandEnvelope command,
         CancellationToken cancellationToken = default)
@@ -19,10 +21,12 @@ public sealed class ChannelCommandQueue : ICommandQueue
         await _channel.Writer.WriteAsync(command, cancellationToken).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
     public IAsyncEnumerable<CommandEnvelope> ReadAllAsync(
         CancellationToken cancellationToken = default)
         => _channel.Reader.ReadAllAsync(cancellationToken);
 
+    /// <inheritdoc />
     public ValueTask ClearPendingAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

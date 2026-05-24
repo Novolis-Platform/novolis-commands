@@ -2,6 +2,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Novolis.Commands.DependencyInjection;
 
+/// <summary>Registers Novolis command engine services in DI.</summary>
 public static class ServiceCollectionExtensions
 {
     /// <summary>

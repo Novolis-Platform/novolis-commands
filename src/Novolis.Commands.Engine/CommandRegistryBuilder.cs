@@ -1,9 +1,11 @@
 namespace Novolis.Commands.Engine;
 
+/// <summary>Fluent builder for <see cref="ICommandRegistry"/>.</summary>
 public sealed class CommandRegistryBuilder
 {
     private readonly List<CommandDefinition> _definitions = [];
 
+    /// <summary>Adds a command without a custom argument parser key.</summary>
     public CommandRegistryBuilder Add(
         string name,
         string? context,
@@ -11,6 +13,7 @@ public sealed class CommandRegistryBuilder
         params CommandArgumentDefinition[] arguments) =>
         Add(name, context, verbs, argumentParserKey: null, arguments);
 
+    /// <summary>Adds a command with an optional named argument parser.</summary>
     public CommandRegistryBuilder Add(
         string name,
         string? context,
@@ -22,8 +25,10 @@ public sealed class CommandRegistryBuilder
         return this;
     }
 
+    /// <summary>Builds a validated registry.</summary>
     public ICommandRegistry Build() => Build(validate: true);
 
+    /// <summary>Builds a registry, optionally skipping validation (for tests).</summary>
     public ICommandRegistry Build(bool validate)
     {
         if (validate)

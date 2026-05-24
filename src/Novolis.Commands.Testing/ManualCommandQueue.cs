@@ -9,6 +9,7 @@ public sealed class ManualCommandQueue : ICommandQueue
     private readonly Lock _lock = new();
     private TaskCompletionSource? _signal;
 
+    /// <inheritdoc />
     public async ValueTask EnqueueAsync(
         CommandEnvelope command,
         CancellationToken cancellationToken = default)
@@ -27,6 +28,7 @@ public sealed class ManualCommandQueue : ICommandQueue
         await ValueTask.CompletedTask;
     }
 
+    /// <inheritdoc />
     public async IAsyncEnumerable<CommandEnvelope> ReadAllAsync(
         [System.Runtime.CompilerServices.EnumeratorCancellation]
         CancellationToken cancellationToken = default)
@@ -53,6 +55,7 @@ public sealed class ManualCommandQueue : ICommandQueue
         }
     }
 
+    /// <inheritdoc />
     public ValueTask ClearPendingAsync(CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();

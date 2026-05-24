@@ -1,12 +1,17 @@
 namespace Novolis.Commands;
 
-/// <summary>Represents CommandPriority.</summary>
+/// <summary>Relative priority for queued commands.</summary>
 public enum CommandPriority
-/// <summary>Low.</summary>
 {
-    /// <summary>High.</summary>
+    /// <summary>Runs after normal and high priority work.</summary>
     Low,
+
+    /// <summary>Default scheduling priority.</summary>
     Normal,
+
+    /// <summary>Runs before low and normal priority work.</summary>
     High,
+
+    /// <summary>Highest priority; may preempt other commands.</summary>
     Emergency
 }

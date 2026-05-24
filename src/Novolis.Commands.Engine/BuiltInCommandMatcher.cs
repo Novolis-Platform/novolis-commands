@@ -2,6 +2,7 @@ using System.Collections.Frozen;
 
 namespace Novolis.Commands.Engine;
 
+/// <summary>Matches system built-in phrases (help, belay that, etc.).</summary>
 public sealed class BuiltInCommandMatcher
 {
     private static readonly FrozenDictionary<string, Func<string, CommandEnvelope>> Phrases =
@@ -13,6 +14,7 @@ public sealed class BuiltInCommandMatcher
             ["help"] = CreateHelp(null)
         }.ToFrozenDictionary(StringComparer.OrdinalIgnoreCase);
 
+    /// <summary>Attempts to build a built-in envelope for a normalized prompt.</summary>
     public bool TryMatch(string normalizedPrompt, out CommandEnvelope? envelope)
     {
         if (Phrases.TryGetValue(normalizedPrompt, out var factory))

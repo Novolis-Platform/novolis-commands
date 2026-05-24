@@ -5,6 +5,7 @@ namespace Novolis.Commands.Engine;
 /// </summary>
 public static class CommandRegistryValidator
 {
+    /// <summary>Validates command definitions and optional parser key coverage.</summary>
     public static void Validate(
         IReadOnlyList<CommandDefinition> definitions,
         IReadOnlyCollection<string>? registeredParserKeys = null,

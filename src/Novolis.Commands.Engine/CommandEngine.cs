@@ -1,5 +1,7 @@
 namespace Novolis.Commands.Engine;
 
+/// <summary>Default <see cref="ICommandEngine{TContext}"/> implementation.</summary>
+/// <typeparam name="TContext">Command execution context.</typeparam>
 public sealed class CommandEngine<TContext> : ICommandEngine<TContext>
 {
     private readonly ICommandRegistry _registry;
@@ -7,6 +9,7 @@ public sealed class CommandEngine<TContext> : ICommandEngine<TContext>
     private readonly BuiltInCommandMatcher _builtInMatcher;
     private readonly CommandParser _parser;
 
+    /// <summary>Creates an engine with optional argument parsers and built-in matcher.</summary>
     public CommandEngine(
         ICommandRegistry registry,
         ICommandContextResolver<TContext> contextResolver,
@@ -25,6 +28,7 @@ public sealed class CommandEngine<TContext> : ICommandEngine<TContext>
         _parser = new CommandParser(registry, parsers);
     }
 
+    /// <summary>Creates an engine with an explicit built-in command matcher.</summary>
     public CommandEngine(
         ICommandRegistry registry,
         ICommandContextResolver<TContext> contextResolver,
@@ -33,6 +37,7 @@ public sealed class CommandEngine<TContext> : ICommandEngine<TContext>
     {
     }
 
+    /// <inheritdoc />
     public ValueTask<ParseResult> ParseCommandAsync(
         string prompt,
         TContext context,

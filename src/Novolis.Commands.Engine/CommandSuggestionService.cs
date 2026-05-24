@@ -7,6 +7,7 @@ namespace Novolis.Commands.Engine;
 /// </summary>
 public sealed class CommandSuggestionService
 {
+    /// <summary>Returns close verb phrase suggestions for a failed parse.</summary>
     public IReadOnlyList<string> Suggest(
         IReadOnlyList<string> tokens,
         int verbStartIndex,

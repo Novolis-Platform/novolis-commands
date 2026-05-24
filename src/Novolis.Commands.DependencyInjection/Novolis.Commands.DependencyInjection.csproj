@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Novolis.Commands.DependencyInjection</PackageId>
-    <Version>1.0.0</Version>
-    <IsPackable>true</IsPackable>
+<IsPackable>true</IsPackable>
     <Description>Microsoft.Extensions.DependencyInjection registration for Novolis.Commands.</Description>
     <RootNamespace>Novolis.Commands.DependencyInjection</RootNamespace>
   </PropertyGroup>

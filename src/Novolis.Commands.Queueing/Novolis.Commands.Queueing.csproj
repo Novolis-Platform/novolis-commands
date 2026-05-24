@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Novolis.Commands.Queueing</PackageId>
-    <Version>1.0.0</Version>
-    <IsPackable>true</IsPackable>
+<IsPackable>true</IsPackable>
     <Description>Channel-backed command queue and interrupt-aware runner.</Description>
     <RootNamespace>Novolis.Commands.Queueing</RootNamespace>
   </PropertyGroup>

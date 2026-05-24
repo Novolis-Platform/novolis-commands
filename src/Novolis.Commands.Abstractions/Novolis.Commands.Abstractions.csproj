@@ -1,8 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Novolis.Commands.Abstractions</PackageId>
-    <Version>1.0.0</Version>
-    <IsPackable>true</IsPackable>
+<IsPackable>true</IsPackable>
     <Description>Contracts for Novolis command parsing, envelopes, and queueing.</Description>
     <RootNamespace>Novolis.Commands</RootNamespace>
   </PropertyGroup>

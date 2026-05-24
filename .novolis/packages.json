@@ -3,7 +3,7 @@
     "Novolis.Commands.Abstractions": {
       "paths": [
         "src/Novolis.Commands.Abstractions/**",
-        "tests/Novolis.Commands.Abstractions.Tests/**",
+        "tests/Novolis.Commands.Unit/Abstractions/**",
         "Directory.Build.props",
         "Directory.Packages.props",
         "global.json"
@@ -13,7 +13,7 @@
     "Novolis.Commands.Engine": {
       "paths": [
         "src/Novolis.Commands.Engine/**",
-        "tests/Novolis.Commands.Engine.Tests/**",
+        "tests/Novolis.Commands.Unit/Engine/**",
         "Directory.Build.props",
         "Directory.Packages.props",
         "global.json"
@@ -23,7 +23,7 @@
     "Novolis.Commands.Queueing": {
       "paths": [
         "src/Novolis.Commands.Queueing/**",
-        "tests/Novolis.Commands.Queueing.Tests/**",
+        "tests/Novolis.Commands.Unit/Queueing/**",
         "Directory.Build.props",
         "Directory.Packages.props",
         "global.json"

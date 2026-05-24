@@ -1,6 +1,6 @@
 # Novolis.Commands.Engine
 
-Natural-language command parser and registry.
+Natural-language command tokenizer, registry builder, and `CommandEngine<TContext>` parser.
 
 ## Install
 
@@ -13,8 +13,27 @@ dotnet add package Novolis.Commands.Engine
 ## Quick start
 
 ```csharp
-// See docs/getting-started.md for integration examples.
+using Novolis.Commands;
+using Novolis.Commands.Engine;
+
+var registry = new CommandRegistryBuilder()
+    .Add("fire", "helm", ["fire"], CommandArgumentDefinition.None())
+    .Build();
+
+var engine = new CommandEngine<MyContext>(registry, resolver);
+ParseResult parsed = await engine.ParseCommandAsync("helm fire", context);
+
+string[] tokens = CommandTokenizer.Tokenize("helm fire");
 ```
+
+Register commands in DI with `Novolis.Commands.DependencyInjection` for hosted apps.
+
+## Related packages
+
+| Package | When to use |
+|---------|-------------|
+| `Novolis.Commands.Abstractions` | Envelopes and queue contracts |
+| `Novolis.Commands.DependencyInjection` | `AddNovolisCommands<TContext>()` |
 
 ## More documentation
 
@@ -23,4 +42,4 @@ dotnet add package Novolis.Commands.Engine
 
 ## Support
 
-Pre-release. APIs may change between releases.
+Pre-release (`2026.1.*` on GitHub Packages).

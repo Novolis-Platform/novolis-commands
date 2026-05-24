@@ -1,6 +1,6 @@
 # Novolis.Commands.Abstractions
 
-Command envelope and queue contracts.
+Command envelope, parse results, queue contracts, and processor interfaces shared by the Novolis command stack.
 
 ## Install
 
@@ -13,8 +13,30 @@ dotnet add package Novolis.Commands.Abstractions
 ## Quick start
 
 ```csharp
-// See docs/getting-started.md for integration examples.
+using Novolis.Commands;
+
+var envelope = new CommandEnvelope
+{
+    Id = new CommandId("helm.fire"),
+    Name = "fire",
+    OriginalPrompt = "helm fire",
+    ContextWord = "helm",
+    Arguments = new Dictionary<string, object?>(),
+};
+
+ParseResult result = ParseResult.Succeeded(envelope);
+if (result.Success)
+    await queue.EnqueueAsync(result.Command!, cancellationToken);
 ```
+
+Implement `ICommandProcessor<TContext>` in your app and consume `ICommandQueue` from `Novolis.Commands.Queueing`.
+
+## Related packages
+
+| Package | When to use |
+|---------|-------------|
+| `Novolis.Commands.Engine` | Natural-language parsing and `CommandRegistry` |
+| `Novolis.Commands.Queueing` | Channel-backed queue and runner |
 
 ## More documentation
 
@@ -23,4 +45,4 @@ dotnet add package Novolis.Commands.Abstractions
 
 ## Support
 
-Pre-release. APIs may change between releases.
+Pre-release (`2026.1.*` on GitHub Packages).

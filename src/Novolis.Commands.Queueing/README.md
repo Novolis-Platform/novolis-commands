@@ -1,6 +1,6 @@
 # Novolis.Commands.Queueing
 
-Channel-backed command queue and runner.
+Channel-backed `ICommandQueue` and `CommandQueueRunner<TContext>` for background command processing.
 
 ## Install
 
@@ -13,8 +13,24 @@ dotnet add package Novolis.Commands.Queueing
 ## Quick start
 
 ```csharp
-// See docs/getting-started.md for integration examples.
+using Novolis.Commands;
+using Novolis.Commands.Queueing;
+
+ICommandQueue queue = new ChannelCommandQueue();
+var runner = new CommandQueueRunner<MyContext>(queue, processor);
+
+await queue.EnqueueAsync(envelope, cancellationToken);
+await runner.RunAsync(context, cancellationToken);
 ```
+
+Pair with `AddNovolisCommands` / `AddNovolisCommandRunner` from `Novolis.Commands.DependencyInjection`.
+
+## Related packages
+
+| Package | When to use |
+|---------|-------------|
+| `Novolis.Commands.Abstractions` | `CommandEnvelope`, `ICommandProcessor<T>` |
+| `Novolis.Commands.DependencyInjection` | One-line host registration |
 
 ## More documentation
 
@@ -23,4 +39,4 @@ dotnet add package Novolis.Commands.Queueing
 
 ## Support
 
-Pre-release. APIs may change between releases.
+Pre-release (`2026.1.*` on GitHub Packages).

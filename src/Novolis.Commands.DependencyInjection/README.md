@@ -1,6 +1,6 @@
 # Novolis.Commands.DependencyInjection
 
-DI registration for the command engine.
+Registers the Novolis command registry, channel queue, matcher, and `ICommandEngine<TContext>` in `Microsoft.Extensions.DependencyInjection`.
 
 ## Install
 
@@ -13,8 +13,25 @@ dotnet add package Novolis.Commands.DependencyInjection
 ## Quick start
 
 ```csharp
-// See docs/getting-started.md for integration examples.
+using Microsoft.Extensions.DependencyInjection;
+using Novolis.Commands.DependencyInjection;
+using Novolis.Commands.Engine;
+
+services.AddNovolisCommands<MyContext>(b => b
+    .Add("fire", "helm", ["fire"]));
+
+services.AddSingleton<ICommandContextResolver<MyContext>, MyResolver>();
+services.AddNovolisCommandRunner<MyContext>();
 ```
+
+You must register `ICommandContextResolver<TContext>` and `ICommandProcessor<TContext>` in the host.
+
+## Related packages
+
+| Package | When to use |
+|---------|-------------|
+| `Novolis.Commands.Engine` | Parser and registry types |
+| `Novolis.Commands.Queueing` | `ChannelCommandQueue` and runner |
 
 ## More documentation
 
@@ -23,4 +40,4 @@ dotnet add package Novolis.Commands.DependencyInjection
 
 ## Support
 
-Pre-release. APIs may change between releases.
+Pre-release (`2026.1.*` on GitHub Packages).

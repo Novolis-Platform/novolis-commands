@@ -1,6 +1,6 @@
 # Novolis.Commands.Testing
 
-Test doubles for command infrastructure.
+Test doubles for command queues, context resolution, and registry-driven engines.
 
 ## Install
 
@@ -13,8 +13,29 @@ dotnet add package Novolis.Commands.Testing
 ## Quick start
 
 ```csharp
-// See docs/getting-started.md for integration examples.
+using Novolis.Commands.Testing;
+using Novolis.Commands.Engine;
+
+var queue = new RecordingCommandQueue();
+var context = new TestCommandContext
+{
+    ContextAliases = new Dictionary<string, string> { ["h"] = "helm" },
+};
+var resolver = new TestCommandContextResolver();
+var engine = new CommandEngine<TestCommandContext>(registry, resolver);
+
+await queue.EnqueueAsync(envelope);
+IReadOnlyList<CommandEnvelope> recorded = queue.Enqueued;
 ```
+
+Use `ManualCommandQueue` when tests need explicit dequeue control.
+
+## Related packages
+
+| Package | When to use |
+|---------|-------------|
+| `Novolis.Commands.Engine` | Production parser under test |
+| `Novolis.Commands.Abstractions` | Envelope types |
 
 ## More documentation
 
@@ -23,4 +44,4 @@ dotnet add package Novolis.Commands.Testing
 
 ## Support
 
-Pre-release. APIs may change between releases.
+Pre-release (`2026.1.*` on GitHub Packages).

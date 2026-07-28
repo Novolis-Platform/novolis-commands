@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Novolis.Commands.Expressions</PackageId>
+    <IsPackable>true</IsPackable>
+    <Description>Parse function-call style prompts (Name(arg, …)) into structured expression calls.</Description>
+    <RootNamespace>Novolis.Commands.Expressions</RootNamespace>
+  </PropertyGroup>
+</Project>

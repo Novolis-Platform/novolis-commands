@@ -13,6 +13,10 @@ Novolis.Commands stops at **intent**, not **execution**.
 
 The parser never calls `ICommandProcessor` and never mutates simulation or game state.
 
+## Function-call expressions
+
+`Novolis.Commands.Expressions` parses CAD-/REPL-style prompts such as `Line(0, 1)` or bare `Undo` into `FunctionCall` values. It is independent of the NL verb-phrase engine and does not produce `CommandEnvelope` by itself — hosts bind names to domain commands.
+
 ## Built-in commands
 
 Phrase → envelope only (handled in `BuiltInCommandMatcher`):

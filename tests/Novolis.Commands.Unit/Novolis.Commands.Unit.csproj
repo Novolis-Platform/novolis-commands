@@ -13,5 +13,6 @@
     <ProjectReference Include="../../src/Novolis.Commands.Engine/Novolis.Commands.Engine.csproj" />
     <ProjectReference Include="../../src/Novolis.Commands.Queueing/Novolis.Commands.Queueing.csproj" />
     <ProjectReference Include="../../src/Novolis.Commands.Testing/Novolis.Commands.Testing.csproj" />
+    <ProjectReference Include="../../src/Novolis.Commands.Expressions/Novolis.Commands.Expressions.csproj" />
   </ItemGroup>
 </Project>

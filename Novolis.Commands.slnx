@@ -5,6 +5,7 @@
     <Project Path="src/Novolis.Commands.Queueing/Novolis.Commands.Queueing.csproj" />
     <Project Path="src/Novolis.Commands.DependencyInjection/Novolis.Commands.DependencyInjection.csproj" />
     <Project Path="src/Novolis.Commands.Testing/Novolis.Commands.Testing.csproj" />
+    <Project Path="src/Novolis.Commands.Expressions/Novolis.Commands.Expressions.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Novolis.Commands.Unit/Novolis.Commands.Unit.csproj" />

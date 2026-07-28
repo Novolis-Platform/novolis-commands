@@ -1,0 +1,83 @@
+using Novolis.Commands.Expressions;
+using TUnit.Core;
+
+namespace Novolis.Commands.Unit.Expressions;
+
+public sealed class FunctionCallParserTests
+{
+    [Test]
+    public async Task TryParse_Line_With_Four_Numbers()
+    {
+        var result = FunctionCallParser.TryParse("Line(0, 1, 2, 3)");
+        await Assert.That(result.Success).IsTrue();
+        var call = result.Call!;
+        await Assert.That(call.Name).IsEqualTo("Line");
+        await Assert.That(call.HasParentheses).IsTrue();
+        await Assert.That(call.Arguments.Count).IsEqualTo(4);
+        await Assert.That(call.Arguments[0].Number).IsEqualTo(0);
+        await Assert.That(call.Arguments[1].Number).IsEqualTo(1);
+        await Assert.That(call.Arguments[2].Number).IsEqualTo(2);
+        await Assert.That(call.Arguments[3].Number).IsEqualTo(3);
+    }
+
+    [Test]
+    public async Task TryParse_Bare_Verb_Has_No_Parentheses()
+    {
+        var result = FunctionCallParser.TryParse("Undo");
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Call!.Name).IsEqualTo("Undo");
+        await Assert.That(result.Call.HasParentheses).IsFalse();
+        await Assert.That(result.Call.Arguments.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task TryParse_Empty_Parens()
+    {
+        var result = FunctionCallParser.TryParse("Fit()");
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Call!.HasParentheses).IsTrue();
+        await Assert.That(result.Call.Arguments.Count).IsEqualTo(0);
+    }
+
+    [Test]
+    public async Task TryParse_Quoted_String_Arg()
+    {
+        var result = FunctionCallParser.TryParse("Rename(\"hull\")");
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Call!.Arguments[0].Text).IsEqualTo("hull");
+        await Assert.That(result.Call.Arguments[0].IsNumber).IsFalse();
+    }
+
+    [Test]
+    public async Task TryParse_Negative_And_Decimal()
+    {
+        var result = FunctionCallParser.TryParse("Circle(-1.5, 2, 3.25)");
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Call!.Arguments[0].Number).IsEqualTo(-1.5);
+        await Assert.That(result.Call.Arguments[2].Number).IsEqualTo(3.25);
+    }
+
+    [Test]
+    public async Task TryParse_Empty_Fails()
+    {
+        var result = FunctionCallParser.TryParse("   ");
+        await Assert.That(result.Success).IsFalse();
+        await Assert.That(result.Error).IsEqualTo(FunctionCallParseError.Empty);
+    }
+
+    [Test]
+    public async Task TryParse_Unbalanced_Fails()
+    {
+        var result = FunctionCallParser.TryParse("Line(1, 2");
+        await Assert.That(result.Success).IsFalse();
+        await Assert.That(result.Error).IsEqualTo(FunctionCallParseError.UnbalancedParentheses);
+    }
+
+    [Test]
+    public async Task TryParse_Trailing_Text_Fails()
+    {
+        var result = FunctionCallParser.TryParse("Line(1, 2) extra");
+        await Assert.That(result.Success).IsFalse();
+        await Assert.That(result.Error).IsEqualTo(FunctionCallParseError.TrailingText);
+    }
+}

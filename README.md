@@ -12,6 +12,8 @@
 | `Novolis.Commands.Queueing` | `dotnet add package Novolis.Commands.Queueing` | [README](https://github.com/Novolis-Platform/novolis-commands/blob/main/src/Novolis.Commands.Queueing/README.md) |
 | `Novolis.Commands.Testing` | `dotnet add package Novolis.Commands.Testing` | [README](https://github.com/Novolis-Platform/novolis-commands/blob/main/src/Novolis.Commands.Testing/README.md) |
 | `Novolis.Commands.Expressions` | `dotnet add package Novolis.Commands.Expressions` | [README](https://github.com/Novolis-Platform/novolis-commands/blob/main/src/Novolis.Commands.Expressions/README.md) |
+| `Novolis.Agent.Surface` | `dotnet add package Novolis.Agent.Surface` | [README](https://github.com/Novolis-Platform/novolis-commands/blob/main/src/Novolis.Agent.Surface/README.md) |
+| `Novolis.Agent.Session` | `dotnet add package Novolis.Agent.Session` | [README](https://github.com/Novolis-Platform/novolis-commands/blob/main/src/Novolis.Agent.Session/README.md) |
 
 For NuGet.org and Visual Studio, the **embedded** README.md inside each package is authoritative.
 
@@ -19,7 +21,7 @@ For NuGet.org and Visual Studio, the **embedded** README.md inside each package 
 
 # novolis-commands
 
-Parse natural-language prompts into command envelopes, queue them, and run them with interrupt-aware cancellation.
+Parse natural-language prompts into command envelopes, queue them, and run them with interrupt-aware cancellation. Also hosts **agent control** packages (`Agent.Surface`, `Agent.Session`).
 
 ## Packages
 
@@ -31,6 +33,8 @@ Parse natural-language prompts into command envelopes, queue them, and run them 
 | `Novolis.Commands.DependencyInjection` | `AddNovolisCommands<TContext>()` registration |
 | `Novolis.Commands.Testing` | Test doubles and helpers |
 | `Novolis.Commands.Expressions` | Function-call prompt parser (`Line(0,1)`) |
+| `Novolis.Agent.Surface` | Attributed action catalogs + HTTP/TCP JSONL hosts |
+| `Novolis.Agent.Session` | Live control session protocol (`session.*`) + LocalIpc/HTTP/TCP/stdio |
 
 ## Milestone v0
 

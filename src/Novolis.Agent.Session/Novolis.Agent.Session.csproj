@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Novolis.Agent.Session</PackageId>
+    <IsPackable>true</IsPackable>
+    <Description>Live control session protocol (snapshot, commands, events) with LocalIpc / HTTP / TCP / stdio hosts — for agent desks and takeovers, not game domain.</Description>
+    <RootNamespace>Novolis.Agent.Session</RootNamespace>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="MessagePack" />
+    <PackageReference Include="Novolis.Transports.LocalIpc" />
+  </ItemGroup>
+</Project>

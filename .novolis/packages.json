@@ -47,6 +47,15 @@
         "global.json"
       ],
       "project": "src/Novolis.Commands.Testing/Novolis.Commands.Testing.csproj"
+    },
+    "Novolis.Agent.Surface": {
+      "paths": [
+        "src/Novolis.Agent.Surface/**",
+        "Directory.Build.props",
+        "Directory.Packages.props",
+        "global.json"
+      ],
+      "project": "src/Novolis.Agent.Surface/Novolis.Agent.Surface.csproj"
     }
   }
 }

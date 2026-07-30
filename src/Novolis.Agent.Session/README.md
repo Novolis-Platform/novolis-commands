@@ -10,6 +10,14 @@ Formerly `Novolis.Game.Session` in `novolis-gaming` — control wire belongs wit
 dotnet add package Novolis.Agent.Session
 ```
 
+## Quick start
+
+```csharp
+using Novolis.Agent.Session;
+
+var surface = SessionSurface.AttachAll(session, preferredPipeName: SessionEndpoints.DefaultPipeName);
+```
+
 ## Transports (same `IGameSession`)
 
 | Transport | Notes |

@@ -3,10 +3,13 @@ using System.Text;
 
 namespace Novolis.Commands.Expressions;
 
-/// <summary>Parses function-call style prompts such as <c>Line(0,1)</c> or bare <c>Undo</c>.</summary>
+/// <summary>
+/// Parses function-call style prompts such as <c>Line(0,1,2,3)</c>, nested
+/// <c>Line(Point(0,1), Point(1,1))</c>, scripts <c>Line(...); Circle(...);</c>, or bare <c>Undo</c>.
+/// </summary>
 public static class FunctionCallParser
 {
-    /// <summary>Attempts to parse <paramref name="prompt"/> into a <see cref="FunctionCall"/>.</summary>
+    /// <summary>Attempts to parse a single call from <paramref name="prompt"/>.</summary>
     public static FunctionCallParseResult TryParse(string? prompt)
     {
         if (string.IsNullOrWhiteSpace(prompt))
@@ -14,20 +17,83 @@ public static class FunctionCallParser
 
         var text = prompt.Trim();
         var i = 0;
-        if (!TryReadIdentifier(text, ref i, out var name) || name.Length == 0)
-            return FunctionCallParseResult.Failed(FunctionCallParseError.InvalidName, "Expected a command name.");
+        if (!TryParseCallAt(text, ref i, out var call, out var error, out var message))
+            return FunctionCallParseResult.Failed(error, message);
 
-        SkipWhitespace(text, ref i);
-        if (i >= text.Length)
+        SkipWhitespaceAndSemicolons(text, ref i);
+        if (i < text.Length)
+            return FunctionCallParseResult.Failed(FunctionCallParseError.TrailingText, "Trailing text after call.");
+
+        return FunctionCallParseResult.Succeeded(call);
+    }
+
+    /// <summary>
+    /// Parses one or more calls separated by <c>;</c>
+    /// (AutoCAD-style: <c>Func(a); Func(b);</c>).
+    /// </summary>
+    public static FunctionCallScriptParseResult TryParseScript(string? prompt)
+    {
+        if (string.IsNullOrWhiteSpace(prompt))
+            return FunctionCallScriptParseResult.Failed(FunctionCallParseError.Empty, "Prompt is empty.");
+
+        var text = prompt.Trim();
+        var i = 0;
+        var calls = new List<FunctionCall>();
+        while (i < text.Length)
         {
-            return FunctionCallParseResult.Succeeded(
-                new FunctionCall(name, [], text, HasParentheses: false));
+            SkipWhitespaceAndSemicolons(text, ref i);
+            if (i >= text.Length)
+                break;
+
+            if (!TryParseCallAt(text, ref i, out var call, out var error, out var message))
+                return FunctionCallScriptParseResult.Failed(error, message);
+
+            calls.Add(call);
+            SkipWhitespace(text, ref i);
+            if (i < text.Length && text[i] == ';')
+            {
+                i++;
+                continue;
+            }
+
+            SkipWhitespace(text, ref i);
+            if (i < text.Length)
+                return FunctionCallScriptParseResult.Failed(
+                    FunctionCallParseError.TrailingText,
+                    $"Expected ';' between calls near position {i}.");
         }
 
-        if (text[i] != '(')
-            return FunctionCallParseResult.Failed(
-                FunctionCallParseError.TrailingText,
-                $"Unexpected text after '{name}'.");
+        if (calls.Count == 0)
+            return FunctionCallScriptParseResult.Failed(FunctionCallParseError.Empty, "Prompt is empty.");
+
+        return FunctionCallScriptParseResult.Succeeded(calls);
+    }
+
+    /// <summary>Parses one call starting at <paramref name="i"/>; leaves <paramref name="i"/> after the call (before optional <c>;</c>).</summary>
+    public static bool TryParseCallAt(
+        string text,
+        ref int i,
+        out FunctionCall call,
+        out FunctionCallParseError error,
+        out string message)
+    {
+        call = null!;
+        error = FunctionCallParseError.InvalidName;
+        message = "Expected a command name.";
+
+        SkipWhitespace(text, ref i);
+        var start = i;
+        if (!TryReadIdentifier(text, ref i, out var name) || name.Length == 0)
+            return false;
+
+        SkipWhitespace(text, ref i);
+        if (i >= text.Length || text[i] != '(')
+        {
+            call = new FunctionCall(name, [], text[start..i].TrimEnd(), HasParentheses: false);
+            error = default;
+            message = string.Empty;
+            return true;
+        }
 
         i++;
         var args = new List<ExpressionArg>();
@@ -36,64 +102,68 @@ public static class FunctionCallParser
         if (i < text.Length && text[i] == ')')
         {
             i++;
-            SkipWhitespace(text, ref i);
-            if (i < text.Length)
-                return FunctionCallParseResult.Failed(FunctionCallParseError.TrailingText, "Trailing text after call.");
-
-            return FunctionCallParseResult.Succeeded(
-                new FunctionCall(name, args, text, HasParentheses: true));
+            call = new FunctionCall(name, args, text[start..i], HasParentheses: true);
+            error = default;
+            message = string.Empty;
+            return true;
         }
 
         while (i < text.Length)
         {
             SkipWhitespace(text, ref i);
             if (i >= text.Length)
-                return FunctionCallParseResult.Failed(
-                    FunctionCallParseError.UnbalancedParentheses,
-                    "Missing closing ')'.");
+            {
+                error = FunctionCallParseError.UnbalancedParentheses;
+                message = "Missing closing ')'.";
+                return false;
+            }
 
-            if (!TryReadArgument(text, ref i, out var arg, out var argError))
-                return FunctionCallParseResult.Failed(argError, $"Invalid argument near position {i}.");
+            if (!TryReadArgument(text, ref i, out var arg, out error))
+            {
+                message = $"Invalid argument near position {i}.";
+                return false;
+            }
 
             args.Add(arg);
             SkipWhitespace(text, ref i);
             if (i >= text.Length)
-                return FunctionCallParseResult.Failed(
-                    FunctionCallParseError.UnbalancedParentheses,
-                    "Missing closing ')'.");
+            {
+                error = FunctionCallParseError.UnbalancedParentheses;
+                message = "Missing closing ')'.";
+                return false;
+            }
 
             if (text[i] == ',')
             {
                 i++;
                 SkipWhitespace(text, ref i);
                 if (i < text.Length && text[i] == ')')
-                    return FunctionCallParseResult.Failed(
-                        FunctionCallParseError.InvalidArgument,
-                        "Trailing comma in argument list.");
+                {
+                    error = FunctionCallParseError.InvalidArgument;
+                    message = "Trailing comma in argument list.";
+                    return false;
+                }
+
                 continue;
             }
 
             if (text[i] == ')')
             {
                 i++;
-                SkipWhitespace(text, ref i);
-                if (i < text.Length)
-                    return FunctionCallParseResult.Failed(
-                        FunctionCallParseError.TrailingText,
-                        "Trailing text after call.");
-
-                return FunctionCallParseResult.Succeeded(
-                    new FunctionCall(name, args, text, HasParentheses: true));
+                call = new FunctionCall(name, args, text[start..i], HasParentheses: true);
+                error = default;
+                message = string.Empty;
+                return true;
             }
 
-            return FunctionCallParseResult.Failed(
-                FunctionCallParseError.InvalidArgument,
-                $"Expected ',' or ')' near position {i}.");
+            error = FunctionCallParseError.InvalidArgument;
+            message = $"Expected ',' or ')' near position {i}.";
+            return false;
         }
 
-        return FunctionCallParseResult.Failed(
-            FunctionCallParseError.UnbalancedParentheses,
-            "Missing closing ')'.");
+        error = FunctionCallParseError.UnbalancedParentheses;
+        message = "Missing closing ')'.";
+        return false;
     }
 
     private static bool TryReadIdentifier(string text, ref int i, out string name)
@@ -145,9 +215,25 @@ public static class FunctionCallParser
                 return false;
 
             i++;
-            var value = sb.ToString();
-            arg = ExpressionArg.FromText(value);
+            arg = ExpressionArg.FromText(sb.ToString());
             return true;
+        }
+
+        // Nested call: Ident(...)
+        var save = i;
+        if (TryReadIdentifier(text, ref i, out _))
+        {
+            SkipWhitespace(text, ref i);
+            if (i < text.Length && text[i] == '(')
+            {
+                i = save;
+                if (!TryParseCallAt(text, ref i, out var nested, out error, out _))
+                    return false;
+                arg = ExpressionArg.FromCall(nested);
+                return true;
+            }
+
+            i = save;
         }
 
         var start = i;
@@ -171,6 +257,12 @@ public static class FunctionCallParser
     private static void SkipWhitespace(string text, ref int i)
     {
         while (i < text.Length && char.IsWhiteSpace(text[i]))
+            i++;
+    }
+
+    private static void SkipWhitespaceAndSemicolons(string text, ref int i)
+    {
+        while (i < text.Length && (char.IsWhiteSpace(text[i]) || text[i] == ';'))
             i++;
     }
 

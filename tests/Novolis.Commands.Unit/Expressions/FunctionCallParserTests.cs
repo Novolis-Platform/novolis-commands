@@ -74,6 +74,39 @@ public sealed class FunctionCallParserTests
     }
 
     [Test]
+    public async Task TryParse_Trailing_Semicolon_Ok()
+    {
+        var result = FunctionCallParser.TryParse("Line(1, 2, 3, 4);");
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Call!.Name).IsEqualTo("Line");
+    }
+
+    [Test]
+    public async Task TryParse_Nested_Point_Args()
+    {
+        var result = FunctionCallParser.TryParse("Line(Point(0.0,1.0), Point(1.0,1.0))");
+        await Assert.That(result.Success).IsTrue();
+        var call = result.Call!;
+        await Assert.That(call.Arguments.Count).IsEqualTo(2);
+        await Assert.That(call.Arguments[0].IsCall).IsTrue();
+        await Assert.That(call.Arguments[0].Call!.Name).IsEqualTo("Point");
+        await Assert.That(call.Arguments[0].Call!.Arguments[0].Number).IsEqualTo(0.0);
+        await Assert.That(call.Arguments[1].Call!.Arguments[0].Number).IsEqualTo(1.0);
+    }
+
+    [Test]
+    public async Task TryParseScript_Multiple_Semicolon_Separated()
+    {
+        var result = FunctionCallParser.TryParseScript(
+            "Line(Point(0,1), Point(1,1)); Circle(Point(2,2), 0.5); Box(1,1,1);");
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Calls.Count).IsEqualTo(3);
+        await Assert.That(result.Calls[0].Name).IsEqualTo("Line");
+        await Assert.That(result.Calls[1].Name).IsEqualTo("Circle");
+        await Assert.That(result.Calls[2].Name).IsEqualTo("Box");
+    }
+
+    [Test]
     public async Task TryParse_Trailing_Text_Fails()
     {
         var result = FunctionCallParser.TryParse("Line(1, 2) extra");

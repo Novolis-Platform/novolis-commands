@@ -1,6 +1,22 @@
 # Novolis.Commands.Expressions
 
-Parse function-call style prompts (`Line(0, 1)`, `Undo`) into structured `FunctionCall` values.
+Parse function-call style prompts into structured `FunctionCall` values:
+
+- Single: `Line(0, 1, 2, 3)` or bare `Undo`
+- Nested: `Line(Point(0.0,1.0), Point(1.0,1.0))`
+- Scripts: `Line(...); Circle(...); Extrude(2.4);` (`;` between calls)
+
+```csharp
+using Novolis.Commands.Expressions;
+
+var script = FunctionCallParser.TryParseScript(
+    "Line(Point(0,1), Point(1,1)); Circle(Point(2,2), 0.5);");
+foreach (var call in script.Calls)
+{
+    // call.Name, call.Arguments (may be nested Call)
+}
+```
+
 
 ## Install
 

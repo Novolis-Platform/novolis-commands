@@ -6,10 +6,8 @@
     <Project Path="src/Novolis.Commands.DependencyInjection/Novolis.Commands.DependencyInjection.csproj" />
     <Project Path="src/Novolis.Commands.Testing/Novolis.Commands.Testing.csproj" />
     <Project Path="src/Novolis.Commands.Expressions/Novolis.Commands.Expressions.csproj" />
-    <Project Path="src/Novolis.Agent.Surface/Novolis.Agent.Surface.csproj" />
-    <Project Path="src/Novolis.Agent.Session/Novolis.Agent.Session.csproj" />
   </Folder>
   <Folder Name="/tests/">
     <Project Path="tests/Novolis.Commands.Unit/Novolis.Commands.Unit.csproj" />
-    </Folder>
+  </Folder>
 </Solution>

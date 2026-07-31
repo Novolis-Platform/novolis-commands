@@ -13,14 +13,10 @@ Novolis.Commands stops at **intent**, not **execution**.
 
 The parser never calls `ICommandProcessor` and never mutates simulation or game state.
 
-## Agent control packages
+## Agent control
 
-| Package | Role |
-|---------|------|
-| `Novolis.Agent.Surface` | Attributed action catalogs, schema, localhost hosts |
-| `Novolis.Agent.Session` | Live decision-point session wire (`session.*`) for desks / takeovers |
+Live agent surfaces moved to **`novolis-agent`** (`Novolis.Agent.Core` / `Novolis.Agent.Surface`). This repo is intent parse → envelope → queue only.
 
-Session was moved out of `novolis-gaming` — control protocol is tooling, not game authoring. See [session-protocol.md](session-protocol.md).
 
 ## Function-call expressions
 
@@ -58,3 +54,4 @@ On `UnknownCommand`, `ParseResult.Suggestions` lists up to three close registere
 - **Queueing** — `Channel<CommandEnvelope>` hidden behind `ICommandQueue`
 - **DependencyInjection** — `AddNovolisCommands<TContext>()`, `AddNovolisCommandRunner<TContext>()`
 - **Testing** — fakes for tests and consumers
+

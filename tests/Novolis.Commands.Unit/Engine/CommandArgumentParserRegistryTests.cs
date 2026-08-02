@@ -7,6 +7,21 @@ namespace Novolis.Commands.Engine.Tests;
 public sealed class CommandArgumentParserRegistryTests
 {
     [Test]
+    public async Task Register_Should_Validate_And_Expose_Parsers()
+    {
+        var registry = new CommandArgumentParserRegistry();
+        var parser = new EchoParser();
+
+        await Assert.That(() => registry.Register("", parser)).Throws<ArgumentException>();
+        await Assert.That(() => registry.Register("echo", null!)).Throws<ArgumentNullException>();
+
+        registry.Register("echo", parser);
+        await Assert.That(registry.TryGet("echo", out var found)).IsTrue();
+        await Assert.That(found).IsSameReferenceAs(parser);
+        await Assert.That(registry.Keys).Contains("echo");
+    }
+
+    [Test]
     public async Task Engine_Should_Parse_With_Registered_Custom_Parser()
     {
         var registry = new CommandRegistryBuilder()

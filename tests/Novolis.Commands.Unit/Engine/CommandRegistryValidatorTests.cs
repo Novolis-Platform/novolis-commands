@@ -68,4 +68,39 @@ public sealed class CommandRegistryValidatorTests
             .Throws<InvalidOperationException>()
             .WithMessageContaining("unknown argument parser key");
     }
+
+    [Test]
+    public async Task Validate_Should_Throw_On_Empty_Verb_Phrase()
+    {
+        var definitions = new[] { new CommandDefinition("a", "helm", ["  "], []) };
+
+        await Assert.That(() => CommandRegistryValidator.Validate(definitions))
+            .Throws<InvalidOperationException>()
+            .WithMessageContaining("empty verb phrase");
+    }
+
+    [Test]
+    public async Task Validate_Should_Throw_On_Cross_Context_Phrase_Overlap()
+    {
+        var definitions = new[]
+        {
+            new CommandDefinition("a", "helm", ["scan"], []),
+            new CommandDefinition("b", "tactical", ["scan"], [])
+        };
+
+        await Assert.That(() => CommandRegistryValidator.Validate(definitions, failOnCrossContextPhraseOverlap: true))
+            .Throws<InvalidOperationException>()
+            .WithMessageContaining("multiple contexts");
+    }
+
+    [Test]
+    public async Task ValidateArgumentParserKeys_NullArguments_Throw()
+    {
+        var definitions = new[] { new CommandDefinition("a", "helm", ["scan"], []) };
+
+        await Assert.That(() => CommandRegistryValidator.ValidateArgumentParserKeys(null!, ["scan"]))
+            .Throws<ArgumentNullException>();
+        await Assert.That(() => CommandRegistryValidator.ValidateArgumentParserKeys(definitions, null!))
+            .Throws<ArgumentNullException>();
+    }
 }

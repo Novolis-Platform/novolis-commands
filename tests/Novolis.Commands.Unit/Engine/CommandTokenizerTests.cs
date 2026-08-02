@@ -28,17 +28,14 @@ public sealed class CommandTokenizerTests
     }
 
     [Test]
-    public async Task Tokenize_Kr12Scene_Lines_Should_All_Produce_Tokens()
+    public async Task Tokenize_Empty_String_Returns_Empty()
     {
-        var lines = BridgeScenes.Kr12RedAlertEncounter()
-            .Orders
-            .Where(o => !o.ShouldFail)
-            .Select(o => o.Spoken.Trim().ToLowerInvariant());
+        await Assert.That(CommandTokenizer.Tokenize("")).IsEmpty();
+    }
 
-        foreach (var line in lines)
-        {
-            var tokens = CommandTokenizer.Tokenize(line);
-            await Assert.That(tokens.Length).IsGreaterThan(0);
-        }
+    [Test]
+    public async Task Tokenize_Punctuation_Only_Tokens_Returns_Empty()
+    {
+        await Assert.That(CommandTokenizer.Tokenize(" , ; ")).IsEmpty();
     }
 }

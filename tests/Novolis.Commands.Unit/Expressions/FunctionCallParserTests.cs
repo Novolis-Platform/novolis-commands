@@ -113,4 +113,75 @@ public sealed class FunctionCallParserTests
         await Assert.That(result.Success).IsFalse();
         await Assert.That(result.Error).IsEqualTo(FunctionCallParseError.TrailingText);
     }
+
+    [Test]
+    public async Task TryParse_Trailing_Comma_Fails()
+    {
+        var result = FunctionCallParser.TryParse("Line(1,)");
+        await Assert.That(result.Success).IsFalse();
+        await Assert.That(result.Error).IsEqualTo(FunctionCallParseError.InvalidArgument);
+    }
+
+    [Test]
+    public async Task TryParse_Escaped_Quote_In_String()
+    {
+        var result = FunctionCallParser.TryParse("Rename(\"h\\ull\")");
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Call!.Arguments[0].Text).IsEqualTo("hull");
+    }
+
+    [Test]
+    public async Task TryParse_Unquoted_Text_Argument()
+    {
+        var result = FunctionCallParser.TryParse("Tag(layer1)");
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Call!.Arguments[0].Text).IsEqualTo("layer1");
+    }
+
+    [Test]
+    public async Task TryParseScript_Empty_Fails()
+    {
+        var result = FunctionCallParser.TryParseScript("   ");
+        await Assert.That(result.Success).IsFalse();
+        await Assert.That(result.Error).IsEqualTo(FunctionCallParseError.Empty);
+    }
+
+    [Test]
+    public async Task TryParseScript_Missing_Semicolon_Fails()
+    {
+        var result = FunctionCallParser.TryParseScript("Line(1); Circle(2) Box(3)");
+        await Assert.That(result.Success).IsFalse();
+        await Assert.That(result.Error).IsEqualTo(FunctionCallParseError.TrailingText);
+    }
+
+    [Test]
+    public async Task TryParseScript_Single_Call_Succeeds()
+    {
+        var result = FunctionCallParser.TryParseScript("Undo");
+        await Assert.That(result.Success).IsTrue();
+        await Assert.That(result.Calls.Count).IsEqualTo(1);
+    }
+
+    [Test]
+    public async Task TryParse_Unclosed_Quote_Fails()
+    {
+        var result = FunctionCallParser.TryParse("Rename(\"hull)");
+        await Assert.That(result.Success).IsFalse();
+        await Assert.That(result.Error).IsEqualTo(FunctionCallParseError.InvalidArgument);
+    }
+
+    [Test]
+    public async Task TryParse_Invalid_Name_Fails()
+    {
+        var result = FunctionCallParser.TryParse("123()");
+        await Assert.That(result.Success).IsFalse();
+        await Assert.That(result.Error).IsEqualTo(FunctionCallParseError.InvalidName);
+    }
+
+    [Test]
+    public async Task TryParseScript_Parse_Error_Mid_Script_Fails()
+    {
+        var result = FunctionCallParser.TryParseScript("Line(1,2); Bad(;");
+        await Assert.That(result.Success).IsFalse();
+    }
 }

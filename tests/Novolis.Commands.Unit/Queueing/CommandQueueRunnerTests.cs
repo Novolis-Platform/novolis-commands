@@ -47,7 +47,7 @@ public class CommandQueueRunnerTests
     public async Task RunAsync_ClearQueue_Should_Drain_Pending_Commands()
     {
         var queue = new ManualCommandQueue();
-        var processor = new RecordingProcessor();
+        var processor = new ClearQueueRecordingProcessor();
         var runner = new CommandQueueRunner<object>(queue, processor);
 
         using var runCts = new CancellationTokenSource();
@@ -69,6 +69,31 @@ public class CommandQueueRunnerTests
         await processor.Processed.Task.WaitAsync(TimeSpan.FromSeconds(5));
         await Assert.That(processor.Names).IsEquivalentTo(
             ["first", "second", BuiltInCommands.ClearQueue]);
+
+        runCts.Cancel();
+        try
+        {
+            await runTask.WaitAsync(TimeSpan.FromSeconds(5));
+        }
+        catch (OperationCanceledException)
+        {
+        }
+    }
+
+    [Test]
+    public async Task RunAsync_Processes_NonInterrupting_Sequence()
+    {
+        var queue = new ManualCommandQueue();
+        var processor = new SequentialRecordingProcessor();
+        var runner = new CommandQueueRunner<object>(queue, processor);
+
+        using var runCts = new CancellationTokenSource();
+        var runTask = runner.RunAsync(new object(), runCts.Token);
+
+        await queue.EnqueueAsync(CreateEnvelope("first"));
+        await queue.EnqueueAsync(CreateEnvelope("second"));
+        await processor.Processed.Task.WaitAsync(TimeSpan.FromSeconds(5));
+        await Assert.That(processor.Names).IsEquivalentTo(["first", "second"]);
 
         runCts.Cancel();
         try
@@ -123,7 +148,7 @@ public class CommandQueueRunnerTests
         }
     }
 
-    private sealed class RecordingProcessor : ICommandProcessor<object>
+    private sealed class ClearQueueRecordingProcessor : ICommandProcessor<object>
     {
         public List<string> Names { get; } = [];
         public TaskCompletionSource Processed { get; } =
@@ -136,6 +161,25 @@ public class CommandQueueRunnerTests
         {
             Names.Add(command.Name);
             if (command.Name == BuiltInCommands.ClearQueue)
+                Processed.TrySetResult();
+
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    private sealed class SequentialRecordingProcessor : ICommandProcessor<object>
+    {
+        public List<string> Names { get; } = [];
+        public TaskCompletionSource Processed { get; } =
+            new(TaskCreationOptions.RunContinuationsAsynchronously);
+
+        public ValueTask ProcessAsync(
+            CommandEnvelope command,
+            object context,
+            CancellationToken cancellationToken)
+        {
+            Names.Add(command.Name);
+            if (Names.Count == 2)
                 Processed.TrySetResult();
 
             return ValueTask.CompletedTask;

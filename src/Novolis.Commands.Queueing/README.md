@@ -1,3 +1,11 @@
+<!-- novolis-pkg-brand:start -->
+<p align="center">
+  <a href="https://github.com/Novolis-Platform/novolis-commands">
+    <img src="https://raw.githubusercontent.com/Novolis-Platform/.github/main/brand/logo-icon.svg" width="72" alt="Novolis"/>
+  </a>
+</p>
+<!-- novolis-pkg-brand:end -->
+
 # Novolis.Commands.Queueing
 
 Channel-backed `ICommandQueue` and `CommandQueueRunner<TContext>` for background command processing.
@@ -40,3 +48,4 @@ Pair with `AddNovolisCommands` / `AddNovolisCommandRunner` from `Novolis.Command
 ## Support
 
 Pre-release (`2026.1.*` on GitHub Packages).
+

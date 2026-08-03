@@ -1,3 +1,11 @@
+<!-- novolis-pkg-brand:start -->
+<p align="center">
+  <a href="https://github.com/Novolis-Platform/novolis-commands">
+    <img src="https://raw.githubusercontent.com/Novolis-Platform/.github/main/brand/logo-icon.svg" width="72" alt="Novolis"/>
+  </a>
+</p>
+<!-- novolis-pkg-brand:end -->
+
 # Novolis.Commands.Expressions
 
 Parse function-call style prompts into structured `FunctionCall` values:
@@ -52,3 +60,4 @@ Bare verbs without parentheses are supported (`Undo`, `Delete`) and report `HasP
 ## Support
 
 Pre-release (`2026.1.*` on GitHub Packages).
+

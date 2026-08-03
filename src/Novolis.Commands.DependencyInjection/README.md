@@ -1,3 +1,11 @@
+<!-- novolis-pkg-brand:start -->
+<p align="center">
+  <a href="https://github.com/Novolis-Platform/novolis-commands">
+    <img src="https://raw.githubusercontent.com/Novolis-Platform/.github/main/brand/logo-icon.svg" width="72" alt="Novolis"/>
+  </a>
+</p>
+<!-- novolis-pkg-brand:end -->
+
 # Novolis.Commands.DependencyInjection
 
 Registers the Novolis command registry, channel queue, matcher, and `ICommandEngine<TContext>` in `Microsoft.Extensions.DependencyInjection`.
@@ -41,3 +49,4 @@ You must register `ICommandContextResolver<TContext>` and `ICommandProcessor<TCo
 ## Support
 
 Pre-release (`2026.1.*` on GitHub Packages).
+

@@ -1,3 +1,11 @@
+<!-- novolis-pkg-brand:start -->
+<p align="center">
+  <a href="https://github.com/Novolis-Platform/novolis-commands">
+    <img src="https://raw.githubusercontent.com/Novolis-Platform/.github/main/brand/logo-icon.svg" width="72" alt="Novolis"/>
+  </a>
+</p>
+<!-- novolis-pkg-brand:end -->
+
 # Novolis.Commands.Abstractions
 
 Command envelope, parse results, queue contracts, and processor interfaces shared by the Novolis command stack.
@@ -46,3 +54,4 @@ Implement `ICommandProcessor<TContext>` in your app and consume `ICommandQueue` 
 ## Support
 
 Pre-release (`2026.1.*` on GitHub Packages).
+

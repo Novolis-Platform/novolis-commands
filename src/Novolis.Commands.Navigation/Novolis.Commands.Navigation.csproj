@@ -1,0 +1,8 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Novolis.Commands.Navigation</PackageId>
+    <Description>Headless menu-tree and mobile navigation contracts for Novolis hosts.</Description>
+    <IsPackable>true</IsPackable>
+    <RootNamespace>Novolis.Commands.Navigation</RootNamespace>
+  </PropertyGroup>
+</Project>

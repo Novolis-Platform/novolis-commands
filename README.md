@@ -45,6 +45,7 @@
 | `Novolis.Commands.DependencyInjection` | `dotnet add package Novolis.Commands.DependencyInjection` | [README](https://github.com/Novolis-Platform/novolis-commands/blob/main/src/Novolis.Commands.DependencyInjection/README.md) |
 | `Novolis.Commands.Engine` | `dotnet add package Novolis.Commands.Engine` | [README](https://github.com/Novolis-Platform/novolis-commands/blob/main/src/Novolis.Commands.Engine/README.md) |
 | `Novolis.Commands.Expressions` | `dotnet add package Novolis.Commands.Expressions` | [README](https://github.com/Novolis-Platform/novolis-commands/blob/main/src/Novolis.Commands.Expressions/README.md) |
+| `Novolis.Commands.Navigation` | `dotnet add package Novolis.Commands.Navigation` | [README](https://github.com/Novolis-Platform/novolis-commands/blob/main/src/Novolis.Commands.Navigation/README.md) |
 | `Novolis.Commands.Queueing` | `dotnet add package Novolis.Commands.Queueing` | [README](https://github.com/Novolis-Platform/novolis-commands/blob/main/src/Novolis.Commands.Queueing/README.md) |
 | `Novolis.Commands.Testing` | `dotnet add package Novolis.Commands.Testing` | [README](https://github.com/Novolis-Platform/novolis-commands/blob/main/src/Novolis.Commands.Testing/README.md) |
 
@@ -65,6 +66,7 @@ Parse natural-language prompts into command envelopes, queue them, and run them 
 | `Novolis.Commands.DependencyInjection` | `AddNovolisCommands<TContext>()` registration |
 | `Novolis.Commands.Testing` | Test doubles and helpers |
 | `Novolis.Commands.Expressions` | Function-call prompt parser (`Line(0,1)`) |
+| `Novolis.Commands.Navigation` | Headless menu trees and native-host navigation state |
 
 ## Milestone v0
 

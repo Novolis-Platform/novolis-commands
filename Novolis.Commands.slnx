@@ -1,6 +1,7 @@
 <Solution>
   <Folder Name="/src/">
     <Project Path="src/Novolis.Commands.Abstractions/Novolis.Commands.Abstractions.csproj" />
+    <Project Path="src/Novolis.Commands.Navigation/Novolis.Commands.Navigation.csproj" />
     <Project Path="src/Novolis.Commands.Engine/Novolis.Commands.Engine.csproj" />
     <Project Path="src/Novolis.Commands.Queueing/Novolis.Commands.Queueing.csproj" />
     <Project Path="src/Novolis.Commands.DependencyInjection/Novolis.Commands.DependencyInjection.csproj" />

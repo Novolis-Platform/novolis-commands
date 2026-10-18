@@ -11,6 +11,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/Novolis.Commands.Abstractions/Novolis.Commands.Abstractions.csproj" />
+    <ProjectReference Include="../../src/Novolis.Commands.Navigation/Novolis.Commands.Navigation.csproj" />
     <ProjectReference Include="../../src/Novolis.Commands.DependencyInjection/Novolis.Commands.DependencyInjection.csproj" />
     <ProjectReference Include="../../src/Novolis.Commands.Engine/Novolis.Commands.Engine.csproj" />
     <ProjectReference Include="../../src/Novolis.Commands.Queueing/Novolis.Commands.Queueing.csproj" />
